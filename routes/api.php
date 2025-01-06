@@ -26,6 +26,6 @@ Route::controller(UserController::class)->group(function () {
     Route::post('login', 'login');
     Route::post('register', 'userRegistration');
     Route::post('forgot-password', 'forgotPassword');
-    Route::post('reset-password', 'resetPassword');
+    Route::post('reset-password', 'resetPassword')->middleware('auth:sanctum');
     Route::post('logout', 'logout')->middleware('auth:sanctum');
 });
