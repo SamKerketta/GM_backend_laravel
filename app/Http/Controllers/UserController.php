@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Mail\SendCodeResetPassword;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -80,36 +82,75 @@ class UserController extends Controller
         }
     }
 
-    // forget => email =>link. Link ka expiration time will expire. code step by settype
-
     /**
-             Forgot Password
+     * | Forgot Password
      */
     public function forgotPassword(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
-                'email' => 'required|email|exists:users',
+                'email' => 'required|email',
+                // 'email' => 'required|email|exists:users',
             ]);
             if ($validator->fails())
                 return validationError($validator);
 
-            // Delete all old code that the user sent before.
-            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-
             $token = Str::random(64);
-
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
             DB::table('password_reset_tokens')->insert([
                 'email' => $request->email,
                 'token' => $token,
                 'created_at' => Carbon::now()
             ]);
-            Mail::to($request->email)->send(new SendCodeResetPassword($token));
+
+            Mail::send('email.reset_password', ['token' => $token], function ($message) use ($request) {
+                $message->to($request->email);
+                $message->subject('Reset Password');
+            });
 
             return responseMsg(true, "We have sent email for password reset link!", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
+    }
+
+    /**
+     * | Reset Password Form
+     */
+    public function showResetPasswordForm($token)
+    {
+        return view('auth.forgetPasswordLink', ['token' => $token]);
+    }
+
+    /**
+     * | Validate Password
+     */
+    public function validatePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'token' => 'required',
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                ])->save();
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json(['message' => __($status)], 200);
+        }
+
+        return response()->json(['message' => __($status)], 400);
     }
 
     /**
