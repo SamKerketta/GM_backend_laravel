@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\MenuRoleMapController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -36,43 +37,42 @@ Route::controller(UserController::class)->group(function () {
     Route::post('reset-password',  'submitResetPasswordForm')->name('reset.password.post');
 });
 
+
 /**
- * | Menu Management 
+ * | Created On-18-04-2025
+ * | Created By- Mrinal Kumar
+ * | Menu Permissions
  */
 Route::controller(MenuController::class)->group(function () {
-    Route::post('save_menu', 'saveMenu');
-    Route::post('upade_menu', 'updateMenu');
-    Route::post('delete_menu', 'deleteMenu');
+    Route::post('crud/menu/add-new-menu', 'addNewMenus');            #_Adding the details of the menus in the menu table
+    Route::post('crud/menu/get-all-menu', 'fetchAllMenus');          #_Get All the Menu List
+    Route::post('crud/menu/delete-menu', 'deleteMenu');              #_Soft Deletion of the menus
+    Route::post('crud/menu/update-menu', 'updateMenu');              #_Update the menu master 
+    Route::post('menu/get-menu-by-id', 'getMenuById');               #_Get menu bu menu Id
 
-    Route::post('_menu', 'saveMenu');
+    /**
+        Under Construction
+     */
+    Route::post('menu-roles/get-menu-by-roles', 'getMenuByroles');              #_Get all the menu by roles
+    Route::post('menu-roles/update-menu-by-role', 'updateMenuByRole');          #_Update Menu Permission By Role
+    Route::post('menu-roles/list-parent-serial', 'listParentSerial');           #_Get the list of parent menus
+
+    Route::post('sub-menu/tree-structure', 'getTreeStructureMenu');             #_Generation of the menu tree Structure        
+    Route::post('sub-menu/get-children-node', 'getChildrenNode');               #_Get the children menus
 });
 
 /**
- * | Role Management
+ * | Created On-19-04-2025. 12 baje k baad
+ * | Created By- Mrinal Kumar
+ * | Menu Role Mapping
  */
-Route::controller(RoleController::class)->group(function () {
-    Route::post('save_role', 'saveRole');
-    Route::post('upade_menu', 'saveMenu');
-    Route::post('delete_menu', 'saveMenu');
-
-    Route::post('_menu', 'saveMenu');
-});
-
-
-// Menu controller
-Route::controller(MenuController::class)->group(function () {
-    Route::post('user-managment/v1/crud/menu/save', 'createMenu');
-    Route::post('user-managment/v1/crud/menu/edit', 'updateMenu');
-    Route::post('user-managment/v1/crud/menu/delete', 'deleteMenu');
-    Route::post('user-managment/v1/crud/menu/get', 'getMenuById');
-    Route::post('user-managment/v1/crud/menu/list', 'menuList');
-    Route::post('user-managment/v1/crud/module/list', 'moduleList')->withoutMiddleware('auth:sanctum');
-    Route::post('user-managment/v2/crud/module/list', 'moduleListV2')->withoutMiddleware('auth:sanctum');
-    Route::post('user-managment/v1/crud/menu/list-parent-serial', 'listParentSerial');
-
-    Route::post('menu-roles/update-menu-by-role', 'updateMenuByRole');
-    Route::post('menu/get-menu-by-roles', 'getMenuByRoles');
-    Route::post('menu/by-module', 'getMenuByModuleId');
-    Route::post('sub-menu/get-children-node', 'getChildrenNode');
-    Route::post('sub-menu/tree-structure', 'getTreeStructureMenu');
+Route::controller(MenuRoleMapController::class)->group(function () {
+    Route::post('crud/menu/add-menu-role', 'createMenuRole');        #_Adding the details of the menu role maps
+    Route::post('crud/menu/list-menu-role', 'menuRoleList');         #_Get All the Menu Role List
+    Route::post('crud/menu/delete-menu-role', 'deleteMenuRole');     #_Soft Deletion of the menu role map
+    Route::post('crud/menu/update-menu-role', 'updateMenuRole');     #_Update the menu role maps 
+    /**
+        Under Construction
+     */
+    Route::post('menu/get-menu-by-id', 'getMenuById');               #_Get menu by menu Id
 });

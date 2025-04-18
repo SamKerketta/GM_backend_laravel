@@ -10,38 +10,71 @@ class MenuMaster extends Model
     use HasFactory;
 
     /**
-     * | get All list of Menues form the master table of menues
+     * | Create Menu
      */
-    public function fetchAllMenues()
+    public function putNewMenues($request)
     {
-        return MenuMaster::select(
-            // 'menu_masters.*',
-            'menu_masters.id',
-            'menu_masters.parent_id',
-            'menu_masters.route',
-            'menu_masters.icon',
-            'menu_masters.menu_string',
-            'menu_masters.serial',
-            'wf_workflows.alt_name as workflow_name',
-            'module_masters.module_name',
-            'module_masters.id as module_id',
-        )
-            ->leftjoin('wf_workflows', 'wf_workflows.id', 'menu_masters.workflow_id')
-            ->leftjoin('module_masters', 'module_masters.id', 'menu_masters.module_id')
-            ->where('is_deleted', false)
-            // ->orderByDesc("id");
-            ->orderBy("menu_masters.serial");
+        $newMenues = new MenuMaster();
+        $newMenues->menu_name   = $request->menuName;
+        $newMenues->is_parent   = $request->isParent;
+        $newMenues->is_child    = $request->isChild;
+        $newMenues->parent_id   = $request->parentId ?? 0;
+        $newMenues->description = $request->description;
+        $newMenues->serial      = $request->serial;
+        $newMenues->route       = $request->route;
+        $newMenues->icon        = $request->icon;
+        $newMenues->save();
+    }
+    
+
+    /**
+     * | Read All Menus
+     */
+    public function fetchAllMenus()
+    {
+        return MenuMaster::where('status', 1)
+            ->orderBy("menu_masters.serial", "Asc")
+            ->get();
     }
 
     /**
-     * | Get Menues By Id
+     * | Delete Menu 
+     */
+    public function softDeleteMenus($menuId)
+    {
+        MenuMaster::where('id', $menuId)
+            ->update(['status' => 0]);
+    }
+
+    /**
+     * | Update the menu details
+     */
+    public function updateMenuMaster($request)
+    {
+        $refValues = MenuMaster::where('id', $request->id)->first();
+        MenuMaster::where('id', $request->id)
+            ->update(
+                [
+                    'menu_name'     => $request->menuName     ?? $refValues->menu_name,
+                    'is_parent'     => $request->isParent     ?? $refValues->is_parent,
+                    'is_child'      => $request->isChild      ?? $refValues->is_child,
+                    'parent_id'     => $request->parentId     ?? $refValues->parent_id,
+                    'description'   => $request->description  ?? $refValues->description,
+                    'serial'        => $request->serial       ?? $refValues->serial,
+                    'route'         => $request->route        ?? $refValues->route,
+                    'icon'          => $request->icon         ?? $refValues->icon,
+                    'status'        => $request->status       ?? $refValues->status,
+                ]
+            );
+    }
+
+    /**
+     * | Get Menus By Id
      */
     public function getMenuById($id)
     {
-        return MenuMaster::select('menu_masters.*', 'wf_workflows.alt_name as workflow_name')
-            ->leftjoin('wf_workflows', 'wf_workflows.id', 'menu_masters.workflow_id')
-            ->where('is_deleted', false)
-            ->where('menu_masters.id', $id)
+        return MenuMaster::where('id', $id)
+            ->where('status', 1)
             ->firstOrFail();
     }
 

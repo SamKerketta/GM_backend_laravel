@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Menu;
 
 use App\Models\Menu\MenuMaster;
 use App\Models\Menu\MenuRoleusermap;
@@ -11,6 +11,105 @@ use Illuminate\Support\Facades\Validator;
 
 class MenuController extends Controller
 {
+    
+    /**
+     * | Delete the details of the Menu master 
+     * | @param menuID
+     * | Query Run Time - ms 
+     * | status- open
+     * | rating-1
+     */
+    public function softDeleteMenues($menuId)
+    {
+        MenuMaster::where('id', $menuId)
+            ->update(['is_deleted' => true]);
+    }
+
+    /**
+     * | Get menu by Role Id
+     */
+    public function getMenuByRole($roleId, $moduleId)
+    {
+        $a = MenuMaster::select(
+            'menu_masters.id',
+            'menu_masters.parent_id'
+        )
+            ->join('wf_rolemenus', 'wf_rolemenus.menu_id', '=', 'menu_masters.id')
+            ->where('menu_masters.is_deleted', false)
+            ->where('wf_rolemenus.status', true)
+            ->whereIn('wf_rolemenus.role_id', $roleId)
+            ->where('module_id', $moduleId)         //changes by mrinal and sam
+            ->orderBy("menu_masters.serial", "Asc")
+            ->get();
+        return  objToArray($a);
+    }
+
+    /**
+     * | Get Parent Menues
+     */
+    public function getParentMenue()
+    {
+        return MenuMaster::select(
+            'id',
+            'menu_string',
+            'parent_id',
+            'serial'
+        )
+            ->where('parent_id', 0)
+            ->where('is_deleted', false)
+            ->orderBy("menu_masters.serial", "Asc");
+    }
+
+    /**
+     * | Get Menues By Id
+     */
+    // public function getMenuById($id)
+    // {
+    //     return MenuMaster::where('id', $id)
+    //         ->where('is_deleted', false)
+    //         ->firstOrFail();
+    // }
+    public function getChildrenNode($id)
+    {
+        return MenuMaster::where('parent_id', $id)
+            ->where('is_deleted', false)
+            ->orderBy("menu_masters.serial", "Asc");
+    }
+
+    /**
+     * | Get Menues By Id
+     */
+    public function checkgetMenuById($id)
+    {
+        return MenuMaster::where('id', $id)
+            ->where('is_deleted', false)
+            ->first();
+    }
+
+    /**
+     * | Update the menu master details
+     */
+    public function updateMenuMaster($request)
+    {
+        $refValues = MenuMaster::where('id', $request->id)->first();
+        MenuMaster::where('id', $request->id)
+            ->update(
+                [
+                    'serial'        => $request->serial         ?? $refValues->serial,
+                    'description'   => $request->description    ?? $refValues->description,
+                    'menu_string'   => $request->menuName       ?? $refValues->menu_string,
+                    'parent_id' => $request->parentSerial   ?? $refValues->parent_id,
+                    'route'         => $request->route          ?? $refValues->route,
+                    'icon'          => $request->icon           ?? $refValues->icon,
+                    'is_deleted'    => $request->delete         ?? $refValues->is_deleted,
+                    'module_id'    => $request->moduleId       ?? $refValues->module_id,
+                ]
+            );
+    }
+    /**
+     * ====================================================================================================
+        KUCH AlAG HAI
+     */
 
     /**
      * | Save Menu
@@ -74,25 +173,25 @@ class MenuController extends Controller
     /**
      * | Menu by Id
      */
-    public function getMenuById(Request $request)
-    {
+    // public function getMenuById(Request $request)
+    // {
 
-        try {
-            $request->validate([
-                'menuId' => 'required|int'
-            ]);
-            $mMenuMaster = new MenuMaster();
-            $menues = $mMenuMaster->getMenuById($request->menuId);
-            if ($menues['parent_id'] == 0) {
-                return responseMsgs(true, "Menu List!", $menues, "", "01", "", "POST", "");
-            }
-            $parent = $mMenuMaster->getMenuById($menues['parent_id']);
-            $menues['parentName'] = $parent['menu_string'];
-            return responseMsgs(true, "Menu List!", $menues, "", "01", "", "POST", "");
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "", "01", "", "POST", "");
-        }
-    }
+    //     try {
+    //         $request->validate([
+    //             'menuId' => 'required|int'
+    //         ]);
+    //         $mMenuMaster = new MenuMaster();
+    //         $menues = $mMenuMaster->getMenuById($request->menuId);
+    //         if ($menues['parent_id'] == 0) {
+    //             return responseMsgs(true, "Menu List!", $menues, "", "01", "", "POST", "");
+    //         }
+    //         $parent = $mMenuMaster->getMenuById($menues['parent_id']);
+    //         $menues['parentName'] = $parent['menu_string'];
+    //         return responseMsgs(true, "Menu List!", $menues, "", "01", "", "POST", "");
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, $e->getMessage(), "", "", "01", "", "POST", "");
+    //     }
+    // }
 
     /**
      * | List all Menus
