@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MasterController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\MenuRoleMapController;
 use App\Http\Controllers\RoleController;
@@ -76,3 +77,26 @@ Route::controller(MenuRoleMapController::class)->group(function () {
      */
     Route::post('menu/get-menu-by-id', 'getMenuById');               #_Get menu by menu Id
 });
+
+/**
+ * | Created On: 28-04-2025
+ * | Created By: Mrinal Kumar
+ * | CRUD of Vendor Master
+ */
+Route::controller(MasterController::class)->group(function () {
+    Route::post('crud/vendor/add-vendor', 'createVendor');        #_Adding the details of the Vendors
+    Route::post('crud/vendor/list-vendor', 'vendorList');         #_Get All the Vendor
+    Route::post('crud/vendor/delete-vendor', 'deleteVendor');     #_Soft Deletion of the Vendor
+    Route::post('crud/vendor/update-vendor', 'updateVendor');     #_Update the Vendor
+   
+    Route::post('crud/item-category/add-item-category', 'createItemCategory');        #_Adding the details of the Category
+    Route::post('crud/item-category/list-item-category', 'ItemCategoryList');         #_Get All the Category
+    Route::post('crud/item-category/delete-item-category', 'deleteItemCategory');     #_Soft Deletion of the Category
+    Route::post('crud/item-category/update-item-category', 'updateItemCategory');     #_Update the Category
+
+    Route::post('crud/inventor/add-item', 'createItem');        #_Adding the details of the Category
+    Route::post('crud/inventor/list-item', 'itemList');         #_Get All the Category
+    Route::post('crud/inventor/delete-item', 'deleteItem');     #_Soft Deletion of the Category
+    Route::post('crud/inventor/update-item', 'updateItem');     #_Update the Category
+});
+
