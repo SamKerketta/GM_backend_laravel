@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreItemRequest;
+use App\Http\Requests\StorePlanRequest;
 use App\Models\Inventory;
 use App\Models\ItemCategoryMaster;
+use App\Models\PlanMaster;
 use App\Models\VendorMaster;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -263,6 +265,90 @@ class MasterController extends Controller
             "description"          => $request->description,
             "notes"                => $request->notes,
             "image"                => $request->image
+        ];
+    }
+
+     /**
+     * ================== CRUD OF PLANS ======================
+     */
+    
+    /**
+     * | Add Plans Data in Plans Master
+     */
+    public function createPlan(StorePlanRequest $request)
+    {
+        try {
+            $mreqs = $this->makePlanRequest($request);
+            $mPlanMaster = new PlanMaster();
+            $mPlanMaster->addPlan($mreqs);    
+            return responseMsg(true, "Plan Added Succesfully", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Fetch all Plan List
+     */
+    public function planList(Request $request)
+    {
+        try {
+            $mPlanMaster = new PlanMaster();
+            $planList    = $mPlanMaster->fetchPlan();
+
+            return responseMsg(true, "List of Plans", $planList);
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Deletion of the Plan
+     */
+    public function deletePlan(Request $request)
+    {
+        try {
+            $request->validate([
+                'id' => 'required'
+            ]);
+            $mPlanMaster = new PlanMaster();
+            $mPlanMaster->where('id', $request->id)->update(['status' => '0']);
+            return responseMsg(true, "Plan Deleted Succesfully", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Update Plan Item Details
+     */
+    public function updatePlan(StorePlanRequest $request)
+    {
+        try {
+            $request->validate(['id' => 'required']);
+            $mreqs       = $this->makePlanRequest($request);
+            $mreqs       = array_merge($mreqs,['id'=>$request->id]);
+            
+            $mPlanMaster = new PlanMaster();
+            $mPlanMaster->editPlan($mreqs);
+            return responseMsg(true, "Plan Details Updated", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Make Plan Request Format
+     */
+    public function makePlanRequest($request)
+    {
+        return [
+            "plan_name"            => $request->planName,
+            "duration"             => $request->duration,
+            "price"                => $request->price,
+            "discount_percentage"  => $request->discount_percentage,
+            "description"          => $request->description,
+            "status"               => $request->status ?? 1
         ];
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MasterController;
+use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\MenuRoleMapController;
 use App\Http\Controllers\RoleController;
@@ -81,7 +82,7 @@ Route::controller(MenuRoleMapController::class)->group(function () {
 /**
  * | Created On: 28-04-2025
  * | Created By: Mrinal Kumar
- * | CRUD of Vendor Master
+ * | CRUD of Vendor Master || Category Master || Inventory Master || Plan Master
  */
 Route::controller(MasterController::class)->group(function () {
     Route::post('crud/vendor/add-vendor', 'createVendor');        #_Adding the details of the Vendors
@@ -98,5 +99,22 @@ Route::controller(MasterController::class)->group(function () {
     Route::post('crud/inventor/list-item', 'itemList');         #_Get All the Category
     Route::post('crud/inventor/delete-item', 'deleteItem');     #_Soft Deletion of the Category
     Route::post('crud/inventor/update-item', 'updateItem');     #_Update the Category
+
+    Route::post('crud/plans/add', 'createPlan');        #_Adding the details of the Plans
+    Route::post('crud/plans/list', 'planList');         #_Get All the Plans
+    Route::post('crud/plans/delete', 'deletePlan');     #_Soft Deletion of the Plans
+    Route::post('crud/plans/update', 'updatePlan');     #_Update the Plans
+});
+
+/**
+ * | Created On: 29-04-2025
+ * | Created By: Mrinal Kumar
+ * | CRUD of Members
+ */
+Route::controller(MemberController::class)->group(function () {
+    Route::post('crud/member/add-member', 'createMember');        #_Adding the details of the Member
+    Route::post('crud/member/list-member', 'memberList');         #_Get All the Member
+    Route::post('crud/member/delete-member', 'deleteMember');     #_Soft Deletion of the Member
+    Route::post('crud/member/update-member', 'updateMember');     #_Update the Member
 });
 
