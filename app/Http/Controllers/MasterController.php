@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreItemRequest;
+use App\Models\Inventory;
 use App\Models\ItemCategoryMaster;
 use App\Models\VendorMaster;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class MasterController extends Controller
@@ -23,11 +26,11 @@ class MasterController extends Controller
                 'vendorName'      => 'required',
                 'vendorAddress'   => 'nullable',
             ]);
-            $mVendorMaster = new VendorMaster();
             $mreqs = [
                 "vendor_name"    => $request->vendorName,
                 "vendor_address" => $request->vendorAddress
             ];
+            $mVendorMaster = new VendorMaster();
             $mVendorMaster->addVendor($mreqs);    
             return responseMsg(true, "Vendor Added Succesfully", "");
         } catch (Exception $e) {
@@ -79,14 +82,13 @@ class MasterController extends Controller
             'status'        => 'required|boolean'
         ]);
         try {
-            $mVendorMaster = new VendorMaster();
-            $mreqs = 
-            [
+            $mreqs =  [
                 'id'             => $request->id,
                 'vendor_name'    => $request->vendorName,
                 'vendor_address' => $request->vendorAddress,
                 'status'         => $request->status
             ];
+            $mVendorMaster = new VendorMaster();
             $mVendorMaster->editVendor($mreqs);
             return responseMsg(true, "Vendor Details Updated", "");
         } catch (Exception $e) {
@@ -107,10 +109,10 @@ class MasterController extends Controller
             $request->validate([
                 'categoryName'      => 'required',
             ]);
-            $mItemCategoryMaster = new ItemCategoryMaster();
             $mreqs = [
                 "category_name"    => $request->categoryName,
             ];
+            $mItemCategoryMaster = new ItemCategoryMaster();
             $mItemCategoryMaster->addItemCategory($mreqs);    
             return responseMsg(true, "Item Category Added Succesfully", "");
         } catch (Exception $e) {
@@ -161,17 +163,106 @@ class MasterController extends Controller
             'status'        => 'required|boolean'
         ]);
         try {
-            $mItemCategoryMaster = new ItemCategoryMaster();
-            $mreqs = 
-            [
+            $mreqs =  [
                 'id'             => $request->id,
                 'category_name'  => $request->categoryName,
-                'status'         => $request->status
-            ];
+                'status'         => $request->status ];
+
+            $mItemCategoryMaster = new ItemCategoryMaster();
             $mItemCategoryMaster->editItemCategory($mreqs);
             return responseMsg(true, "Item Category Details Updated", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
+    }
+
+    /**
+     * ================== CRUD OF INVENTORY ITEM ======================
+     */
+    
+    /**
+     * | Add Data of Item in Inventory Master
+     */
+    public function createItem(StoreItemRequest $request)
+    {
+        try {
+            $mreqs = $this->makeItemRequest($request);
+            $mInventory = new Inventory();
+            $mInventory->addItem($mreqs);    
+            return responseMsg(true, "Item Added Succesfully", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Fetch all Inventory Item
+     */
+    public function itemList(Request $request)
+    {
+        try {
+            $mInventory = new Inventory();
+            $itemList  = $mInventory->fetchItem();
+
+            return responseMsg(true, "List of Inventory Item ", $itemList);
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Deletion of the Item category
+     */
+    public function deleteItem(Request $request)
+    {
+        try {
+            $request->validate([
+                'id' => 'required'
+            ]);
+            $mInventory = new Inventory();
+            $mInventory->where('id', $request->id)->update(['status' => '0']);
+            return responseMsg(true, "Inventory Item Deleted Succesfully", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Update Inventory Item Details
+     */
+    public function updateItem(StoreItemRequest $request)
+    {
+        try {
+            $request->validate(['id' => 'required']);
+            $mreqs      = $this->makeItemRequest($request);
+            $mreqs      = array_merge($mreqs,['id'=>$request->id]);
+            $mInventory = new Inventory();
+            $mInventory->editItem($mreqs);
+            return responseMsg(true, "Inventory Item Details Updated", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Make request format
+     */
+    public function makeItemRequest($request)
+    {
+        return [
+            "vendor_id"            => $request->vendorId,
+            "item_category_id"     => $request->itemCategoryId,
+            "item_name"            => $request->itemName,
+            "brand"                => $request->brand,
+            "quantity"             => $request->quantity,
+            "unit_cost"            => $request->unitCost,
+            "total_cost"           => $request->totalCost,
+            "date_of_purchase"     => $request->dateOfPurchase,
+            "warranty_expiry_date" => $request->warrantyExpiryDate,
+            "status"               => $request->status ?? 1,
+            "description"          => $request->description,
+            "notes"                => $request->notes,
+            "image"                => $request->image
+        ];
     }
 }

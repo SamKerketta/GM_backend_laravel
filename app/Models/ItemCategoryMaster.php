@@ -24,8 +24,8 @@ class ItemCategoryMaster extends Model
      */
     public function editItemCategory($req)
     {
-        $mVendorMaster = ItemCategoryMaster::find($req['id']);
-        $mVendorMaster->update($req);
+        $mItemCategoryMaster = ItemCategoryMaster::find($req['id']);
+        $mItemCategoryMaster->update($req);
     }
 
     /**
