@@ -4,11 +4,11 @@ use App\Http\Controllers\MasterController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\MenuRoleMapController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -89,7 +89,7 @@ Route::controller(MasterController::class)->group(function () {
     Route::post('crud/vendor/list-vendor', 'vendorList');         #_Get All the Vendor
     Route::post('crud/vendor/delete-vendor', 'deleteVendor');     #_Soft Deletion of the Vendor
     Route::post('crud/vendor/update-vendor', 'updateVendor');     #_Update the Vendor
-   
+
     Route::post('crud/item-category/add-item-category', 'createItemCategory');        #_Adding the details of the Category
     Route::post('crud/item-category/list-item-category', 'ItemCategoryList');         #_Get All the Category
     Route::post('crud/item-category/delete-item-category', 'deleteItemCategory');     #_Soft Deletion of the Category
@@ -116,5 +116,20 @@ Route::controller(MemberController::class)->group(function () {
     Route::post('crud/member/list-member', 'memberList');         #_Get All the Member
     Route::post('crud/member/delete-member', 'deleteMember');     #_Soft Deletion of the Member
     Route::post('crud/member/update-member', 'updateMember');     #_Update the Member
+
+    Route::post('biometric/logs', 'storeBiometric');             #_Biomertric Logs
 });
 
+/**
+ * | Created On: 30-04-2025
+ * | Created By: Mrinal Kumar
+ * | For Payment
+ */
+Route::controller(PaymentController::class)->group(function () {
+    Route::post('payment/offline', 'offlinePayment');         #_Offline Payment
+    /**
+        Under Construction
+     */
+    Route::post('payment/initiate', 'initiatePayment');        #_
+    Route::post('payment/initiate', 'initiatePayment');        #_
+});

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreMemberRequest;
+use App\Models\AttendanceLog;
 use App\Models\Member;
 use Exception;
 use Illuminate\Http\Request;
@@ -12,7 +13,7 @@ class MemberController extends Controller
     /**
      * ================== CRUD OF MEMBERS ======================
      */
-    
+
     /**
      * | Add Members Data in Member table
      */
@@ -21,7 +22,7 @@ class MemberController extends Controller
         try {
             $mreqs = $this->makeMemberRequest($request);
             $mMember = new Member();
-            $mMember->addMember($mreqs);    
+            $mMember->addMember($mreqs);
             return responseMsg(true, "Member has been added succesfully", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
@@ -68,8 +69,8 @@ class MemberController extends Controller
         try {
             $request->validate(['id' => 'required']);
             $mreqs       = $this->makeMemberRequest($request);
-            $mreqs       = array_merge($mreqs,['id'=>$request->id]);
-            
+            $mreqs       = array_merge($mreqs, ['id' => $request->id]);
+
             $mMember    = new Member();
             $mMember->editMember($mreqs);
             return responseMsg(true, "Member Details Updated", "");
@@ -94,5 +95,29 @@ class MemberController extends Controller
             "photo"             => $request->photo,
             "status"            => $request->status ?? 1
         ];
+    }
+
+    /**
+     * | Biometric Logs
+     */
+    public function storeBiometric(Request $request)
+    {
+        try {
+            $logData = $request->all();
+
+            // Example: match user_id to member
+            $member = Member::where('id', $logData['user_id'])->first();
+
+            if ($member) {
+                AttendanceLog::create([
+                    'member_id'    => $member->id,
+                    'checkin_time' => $logData['timestamp'],
+                    'method'       => $logData['method'] ?? 'Unknown'
+                ]);
+            }
+            return responseMsg(true, "Biomertic data stored", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
     }
 }
