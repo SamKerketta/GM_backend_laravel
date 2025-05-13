@@ -25,14 +25,16 @@ class StoreMemberRequest extends FormRequest
     {
         return [
             'name'              => 'required|string|max:100',
+            'dob'               => 'required|date',
+            'gender'            => 'required|in:male,female,other', // Fixed syntax
             'email'             => 'required|email|max:100',
             'phone'             => 'required|string|max:15',
+            'address'           => 'required|string|max:200',
             'membershipStart'   => 'required|date',
             'membershipEnd'     => 'nullable|date|after_or_equal:membership_start',
             'planId'            => 'required|integer',
             'assignedTrainer'   => 'nullable|integer',
             'photo'             => 'nullable|string|max:255', // or 'image|mimes:jpg,png' if it's a file upload
-            'created_at'        => 'nullable|date',
         ];
     }
 

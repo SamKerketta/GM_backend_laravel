@@ -86,13 +86,17 @@ class MemberController extends Controller
     {
         return [
             "name"              => $request->name,
+            "dob"               => $request->dob,
+            "gender"            => $request->gender,
             "email"             => $request->email,
             "phone"             => $request->phone,
+            "address"           => $request->address,
             "membership_start"  => $request->membershipStart,
             "membership_end"    => $request->membershipEnd,
             "plan_id"           => $request->planId,
             "assigned_trainer"  => $request->assignedTrainer, // optional
             "photo"             => $request->photo,
+            "id_proof"          => $request->idProof,
             "status"            => $request->status ?? 1
         ];
     }

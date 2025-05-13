@@ -19,6 +19,7 @@ class UserController extends Controller
 {
     /**
      * | User Login
+     * | 01
      */
     public function login(Request $request)
     {
@@ -36,7 +37,7 @@ class UserController extends Controller
             $mUser = new User();
             $user  = $mUser->getUserByEmail($request->email);
             if (!$user)
-                throw new Exception("Please enter a valid email.");
+                throw new Exception("Account does not exist !!!");
             if ($user->suspended == true)
                 throw new Exception("You are not authorized to log in!");
             if (Hash::check($request->password, $user->password)) {
@@ -55,6 +56,7 @@ class UserController extends Controller
 
     /**
      * | User Registration
+     * | 02
      */
     public function userRegistration(Request $request)
     {
@@ -83,7 +85,9 @@ class UserController extends Controller
     }
 
     /**
-     * | Forgot Password
+     * | Forgot Password 
+     * | Sent Link on Mail
+     * | 03
      */
     public function forgotPassword(Request $request)
     {
@@ -116,6 +120,7 @@ class UserController extends Controller
 
     /**
      * | Reset Password Form
+     * | 04
      */
     public function showResetPasswordForm($token)
     {
@@ -124,6 +129,7 @@ class UserController extends Controller
 
     /**
      * | Validate Password
+     * | 05
      */
     public function validatePassword(Request $request)
     {
@@ -155,6 +161,7 @@ class UserController extends Controller
 
     /**
      * | Reset Password
+     * | 06
      */
     public function resetPassword(Request $request)
     {
@@ -194,6 +201,7 @@ class UserController extends Controller
 
     /**
      * | Logout
+     * | 07
      */
     public function logout(Request $request)
     {

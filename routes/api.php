@@ -5,6 +5,7 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\MenuRoleMapController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -28,15 +29,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
  * | User Register & Login
  */
 Route::controller(UserController::class)->group(function () {
-    Route::post('login', 'login');
-    Route::post('register', 'userRegistration');
-    Route::post('forgot-password', 'forgotPassword'); //sendResetLinkEmail
-    Route::post('validate-password', 'validatePassword');
-    Route::post('reset-password', 'resetPassword')->middleware('auth:sanctum');
-    Route::post('logout', 'logout')->middleware('auth:sanctum');
-
-    Route::get('reset-password/{token}',  'showResetPasswordForm')->name('reset.password.get');
-    Route::post('reset-password',  'submitResetPasswordForm')->name('reset.password.post');
+    Route::post('login', 'login');                                                                  #_01
+    Route::post('register', 'userRegistration');                                                    #_02
+    Route::post('forgot-password', 'forgotPassword'); //sendResetLinkEmail                          #_03
+    Route::get('reset-password/{token}',  'showResetPasswordForm')->name('reset.password.get');     #_04
+    Route::post('validate-password', 'validatePassword');                                           #_05
+    Route::post('reset-password', 'resetPassword')->middleware('auth:sanctum');                     #_06
+    Route::post('logout', 'logout')->middleware('auth:sanctum');                                    #_07    
 });
 
 
@@ -118,6 +117,7 @@ Route::controller(MemberController::class)->group(function () {
     Route::post('crud/member/update-member', 'updateMember');     #_Update the Member
 
     Route::post('biometric/logs', 'storeBiometric');             #_Biomertric Logs
+    
 });
 
 /**
@@ -132,4 +132,17 @@ Route::controller(PaymentController::class)->group(function () {
      */
     Route::post('payment/initiate', 'initiatePayment');        #_
     Route::post('payment/initiate', 'initiatePayment');        #_
+});
+
+/**
+ * | Created On: 30-04-2025
+ * | Created By: Mrinal Kumar
+ * | For Reporting
+ */
+Route::controller(ReportController::class)->group(function () {
+    Route::post('report/monthly-payments', 'monthlyPayment');         #_Offline Payment
+});
+
+Route::controller(ReportController::class)->group(function () {
+    Route::post('send-whatsaap', 'sendWhatsaap');                     #_Send Whatsaap
 });
