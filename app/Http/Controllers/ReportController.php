@@ -26,33 +26,4 @@ class ReportController extends Controller
             return responseMsg(false, $e->getMessage(), "");
         }
     }
-
-    public function sendWhatsaap(Request $request)
-    {
-        try{
-            
-        #_Whatsaap Message
-            if (strlen($request->mobile_no) == 10) {
-                $whatsapp = (Whatsapp_Send(
-                    $request->mobile_no,
-                    $request->template_id,
-                    [
-                        "content_type" => "text",
-                        [
-                            "Anshu",
-                            // "Tannu Fitness Center",
-                            "Gears of Fead ",
-                            "May-2025",
-                            "12-05-2025"
-                        ]
-                    ]
-                ));
-            }
-            return $whatsapp;
-        }
-        catch(Exception $e)
-        {
-           return $e->getMessage();
-        }
-    }
 }
