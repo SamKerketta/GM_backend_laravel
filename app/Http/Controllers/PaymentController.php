@@ -49,11 +49,16 @@ class PaymentController extends Controller
             ]);
             $refMember = Member::find($request->id);
 
+            if (!$refMember)
+                throw new Exception("Requested user does not exists.");
+
             #_Whatsaap Message
-            if (strlen($request->mobile_no) == 10) {
+            // if (strlen($refMember->phone) == 10) {
+            if (strlen($refMember->phone) == 10) {
                 $whatsapp = (Whatsapp_Send(
-                    $request->mobile_no,
-                    $request->template_id,
+                    $refMember->phone,
+                    'membership_reminder',
+                    // $request->template_id,
                     [
                         "content_type" => "text",
                         [
@@ -66,9 +71,8 @@ class PaymentController extends Controller
                     ]
                 ));
             }
-            return $whatsapp;
-            return responseMsg(true, "", "");
-
+            
+            return responseMsg(true, "Message sent succesfully.", $whatsapp['msg']['messages'][0]['message_status']);
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
