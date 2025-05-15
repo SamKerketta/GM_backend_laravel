@@ -34,7 +34,6 @@ class Member extends Model
     public function fetchMember()
     {
        return Member::where('status',1)
-                        ->orderBy('name')
-                        ->get();
+                        ->orderBy('name');
     }
 }

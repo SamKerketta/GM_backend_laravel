@@ -53,7 +53,6 @@ class PaymentController extends Controller
                 throw new Exception("Requested user does not exists.");
 
             #_Whatsaap Message
-            // if (strlen($refMember->phone) == 10) {
             if (strlen($refMember->phone) == 10) {
                 $whatsapp = (Whatsapp_Send(
                     $refMember->phone,
@@ -71,7 +70,7 @@ class PaymentController extends Controller
                     ]
                 ));
             }
-            
+
             return responseMsg(true, "Message sent succesfully.", $whatsapp['msg']['messages'][0]['message_status']);
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");

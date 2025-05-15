@@ -35,8 +35,10 @@ class MemberController extends Controller
     public function memberList(Request $request)
     {
         try {
+            $perPage = $request->perPage ?? 10;
             $mMember    = new Member();
-            $memberList = $mMember->fetchMember();
+            $memberList = $mMember->fetchMember()
+                ->paginate($perPage);
 
             return responseMsg(true, "List of Members", $memberList);
         } catch (Exception $e) {

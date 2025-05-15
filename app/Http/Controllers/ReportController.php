@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Member;
+use App\Models\Transaction;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -12,16 +13,64 @@ class ReportController extends Controller
     public function monthlyPayment(Request $request)
     {
         $todayDate = Carbon::now();
-        $month = $todayDate->format('m');
-        $year  = $todayDate->format('Y');
+        $month     = $todayDate->format('m');
+        $year      = $todayDate->format('Y');
         try {
-            $data = Member::select('*')
-                ->join('plan_masters', 'plan_masters.id', 'members.plan_id')
+            $data = Member::select(
+                'name',
+                'gender',
+                'membership_start',
+                'membership_end',
+                'amount_paid',
+                'payment_for',
+                'payment_date',
+                'month_from',
+                'month_till',
+                'invoice_no',
+                // 'plan_name',
+                // 'duration',
+            )
+                // ->join('plan_masters', 'plan_masters.id', 'members.plan_id')
                 ->leftjoin('transactions', 'transactions.member_id', 'members.id')
-                ->whereMonth('transactions.transaction_date', $month)
-                ->whereYear('transactions.transaction_date', $year)
+                ->whereMonth('transactions.payment_date', $month)
+                ->whereYear('transactions.payment_date', $year)
                 ->get();
             return responseMsg(true, "Monthly Payment Report", $data);
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    public function paymentReport(Request $request)
+    {
+        try {
+            $request->validate([
+                'startDate' => 'required|date',
+                'endDate'   => 'required|date|after_or_equal:startDate',
+            ]);
+
+            $payments = Transaction::select(
+                'name',
+                'gender',
+                // 'membership_start',
+                // 'membership_end',
+                'amount_paid',
+                'payment_for',
+                'payment_date',
+                'month_from',
+                'month_till',
+                'invoice_no',
+            )
+                ->leftjoin('members', 'members.id', 'transactions.member_id')
+                ->whereBetween('payment_date', [$request->startDate, $request->endDate])
+                ->orderBy('payment_date', 'asc')
+                ->get();
+
+            return response()->json([
+                'status'  => true,
+                'message' => 'Payment report generated successfully.',
+                'data'    => $payments
+            ]);
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
