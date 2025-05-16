@@ -7,6 +7,7 @@ use App\Models\Transaction;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -41,6 +42,9 @@ class ReportController extends Controller
         }
     }
 
+    /**
+     * | 
+     */
     public function paymentReport(Request $request)
     {
         try {
@@ -74,5 +78,24 @@ class ReportController extends Controller
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
+    }
+
+    /**
+     * | Fetch Expiring Members
+     */
+    public function expiringPlans()
+    {
+        $today      = Carbon::today()->toDateString();
+        $futureDate = Carbon::today()->addDays(15)->toDateString();
+
+        return Member::select(
+            '*',
+            DB::raw("DATEDIFF(membership_end, '$today') as days_left")
+        )
+            ->where('status', 1)
+            ->whereDate('membership_end', '>=', $today)
+            ->whereDate('membership_end', '<=', $futureDate)
+            ->orderBy('membership_end', 'asc')
+            ->get();
     }
 }

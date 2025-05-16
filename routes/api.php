@@ -143,5 +143,5 @@ Route::controller(PaymentController::class)->group(function () {
 Route::controller(ReportController::class)->group(function () {
     Route::post('report/monthly-payments', 'monthlyPayment');         #_Monthly Payment
     Route::post('report/payment-report', 'paymentReport');            #_Date wise Payment Report
-    Route::post('report/plans-expiring', 'expiringPlans"');            #_Date wise Payment Report
+    Route::post('report/plans-expiring', 'expiringPlans');           #_Date wise Payment Report
 });
