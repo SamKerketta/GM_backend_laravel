@@ -63,8 +63,8 @@ class Member extends Model
         $today = Carbon::now()->toDateString();
         return Member::select(
             '*',
-            DB::raw("IF(membership_end < '$today', 'Dues', 'No Dues') as due_status"),
-            DB::raw("IF(membership_end < '$today', TIMESTAMPDIFF(MONTH, membership_end, '$today'), 0) as months_due")
+            DB::raw("IF(membership_end < '$today', 1, 0) as due_status"),
+            DB::raw("IF(membership_end < '$today', CEIL(DATEDIFF('$today', membership_end) / 30), 0) as months_due")
 
         )
             ->where('status', 1)
