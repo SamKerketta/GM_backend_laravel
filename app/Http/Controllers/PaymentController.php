@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\IdGenerator;
 use App\Models\Member;
 use App\Models\Transaction;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -17,10 +19,14 @@ class PaymentController extends Controller
     {
         try {
             $request->validate([
-                'memberId' => 'required'
+                'memberId'  => 'required',
+                "forMonth"  => 'required'
             ]);
             $idGenerator  = new IdGenerator;
             $mTransaction = new Transaction();
+            $mMember      = new Member();
+
+            $monthTill = Carbon::parse($request->monthFrom)->addMonth($request->forMonth);
 
             $invoiceNo   = $idGenerator->generateInvoiceNo();
             $mReqs = [
@@ -29,11 +35,19 @@ class PaymentController extends Controller
                 "payment_for"    => $request->paymentFor,
                 "payment_date"   => $request->paymentDate,
                 "payment_method" => $request->paymentMethod,
+                "month_from"     => $request->monthFrom,
+                "month_till"     => $monthTill,
                 "invoice_no"     => $invoiceNo
             ];
+
+            DB::beginTransaction();
             $mTransaction->store($mReqs);
+            $mMember->where('id', $request->memberId)->update(['membership_end' => $monthTill]);
+            DB::commit();
+
             return responseMsg(true, "Payment successful. Your Invoice no is " . $invoiceNo, $invoiceNo);
         } catch (Exception $e) {
+            DB::rollBack();
             return responseMsg(false, $e->getMessage(), "");
         }
     }
