@@ -40,6 +40,13 @@ class MemberController extends Controller
             $memberList = $mMember->fetchMember()
                 ->paginate($perPage);
 
+            // remove null fields in each item
+            $memberList->getCollection()->transform(function ($item) {
+                return collect($item)->map(function ($value) {
+                    return is_null($value) ? '' : $value;
+                })->all();
+            });
+
             return responseMsg(true, "List of Members", $memberList);
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
