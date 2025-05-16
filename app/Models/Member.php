@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Member extends Model
 {
@@ -59,7 +60,14 @@ class Member extends Model
      */
     public function fetchMember()
     {
-        return Member::where('status', 1)
+        $today = Carbon::now()->toDateString();
+        return Member::select(
+            '*',
+            DB::raw("IF(membership_end < '$today', 'Dues', 'No Dues') as due_status"),
+            DB::raw("IF(membership_end < '$today', TIMESTAMPDIFF(MONTH, membership_end, '$today'), 0) as months_due")
+
+        )
+            ->where('status', 1)
             ->orderBy('name');
     }
 }
