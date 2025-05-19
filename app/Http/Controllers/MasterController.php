@@ -296,7 +296,8 @@ class MasterController extends Controller
             $mPlanMaster = new PlanMaster();
             $planList    = $mPlanMaster->fetchPlan();
 
-            return responseMsg(true, "List of Plans", $planList);
+
+            return responseMsg(true, "List of Plans", remove_null($planList));
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
