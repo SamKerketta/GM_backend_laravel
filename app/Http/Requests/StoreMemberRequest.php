@@ -32,8 +32,8 @@ class StoreMemberRequest extends FormRequest
             'address'           => 'required|string|max:200',
             'membershipStart'   => 'required|date',
             'membershipEnd'     => 'nullable|date|after_or_equal:membership_start',
-            'is_payment'        => 'required|boolean',
-            'planId'            => 'required_if:is_payment,1|integer',
+            'isPayment'         => 'required|boolean',
+            'planId'            => 'required_if:isPayment,1|integer',
             'assignedTrainer'   => 'nullable|integer',
             'photo'             => 'nullable|string|max:255', // or 'image|mimes:jpg,png' if it's a file upload
 
