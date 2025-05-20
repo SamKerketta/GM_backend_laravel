@@ -296,7 +296,6 @@ class MasterController extends Controller
             $mPlanMaster = new PlanMaster();
             $planList    = $mPlanMaster->fetchPlan();
 
-
             return responseMsg(true, "List of Plans", remove_null($planList));
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
@@ -344,12 +343,13 @@ class MasterController extends Controller
     public function makePlanRequest($request)
     {
         return [
-            "plan_name"            => $request->planName,
-            "duration"             => $request->duration,
-            "price"                => $request->price,
-            "discount_percentage"  => $request->discount_percentage,
-            "description"          => $request->description,
-            "status"               => $request->status ?? 1
+            "plan_name"                 => $request->planName,
+            "duration"                  => $request->duration,
+            "price"                     => $request->price,
+            "discount_percentage"       => $request->discount_percentage,
+            "description"               => $request->description,
+            "is_admission_fee_required" => $request->isAdmissionFeeRequired ?? 0,
+            "status"                    => $request->status ?? 1,
         ];
     }
 }
