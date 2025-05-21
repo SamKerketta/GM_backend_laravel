@@ -59,9 +59,9 @@ class PaymentController extends Controller
     {
         try {
             $request->validate([
-                'id' => 'required|numeric'
+                'memberId' => 'required|numeric'
             ]);
-            $refMember = Member::find($request->id);
+            $refMember = Member::find($request->memberId);
 
             if (!$refMember)
                 throw new Exception("Requested user does not exists.");
