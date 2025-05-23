@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
+use function PHPUnit\Framework\returnSelf;
+
 class Member extends Model
 {
     use HasFactory;
@@ -43,7 +45,8 @@ class Member extends Model
     public function addMember($req)
     {
         $mMember = new Member();
-        $mMember->create($req);
+        $createdMember = $mMember->create($req);
+        return $createdMember;
     }
 
     /**

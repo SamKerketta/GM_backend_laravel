@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreMemberRequest;
+use App\IdGenerator;
 use App\Models\AttendanceLog;
 use App\Models\Member;
+use App\Models\Transaction;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MemberController extends Controller
 {
@@ -20,10 +23,32 @@ class MemberController extends Controller
     public function createMember(StoreMemberRequest $request)
     {
         try {
-            $mreqs = $this->makeMemberRequest($request);
-            $mMember = new Member();
-            $mMember->addMember($mreqs);
-            return responseMsg(true, "Member has been added succesfully", "");
+            $paymentController  = new PaymentController;
+            $idGenerator        = new IdGenerator;
+            $mMember            = new Member();
+            $memberId      = $idGenerator->generateMemberId();
+            $mreqs         = $this->makeMemberRequest($request);
+            $mreqs         = array_merge($mreqs, ['member_id' => $memberId]);
+            
+            $memberDetails = $mMember->addMember($mreqs);
+            $msg           = "Member has been added succesfully and member id is  $memberId";
+
+            if ($request->isPayment == true) {
+                $paymentReqs =  new Request([
+                    'memberId'      => $memberDetails->id,
+                    'forMonth'      => $request->forMonth,
+                    "amountPaid"    => $request->amountPaid,
+                    "paymentFor"    => $request->paymentFor,
+                    "paymentDate"   => $request->paymentDate,
+                    "paymentMethod" => $request->paymentMethod,
+                    "monthFrom"     => $request->monthFrom,
+                ]);
+                $paymentDetails = $paymentController->offlinePayment($paymentReqs);
+                $invoiceNo = $paymentDetails->original['data'];
+                $msg = "Member has been added succesfully. Member id is $memberId & Invoice No is $invoiceNo";
+            }
+
+            return responseMsg(true, $msg, "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
@@ -77,10 +102,10 @@ class MemberController extends Controller
     {
         try {
             $request->validate(['id' => 'required']);
-            $mreqs       = $this->makeMemberRequest($request);
-            $mreqs       = array_merge($mreqs, ['id' => $request->id]);
-
             $mMember    = new Member();
+            $mreqs      = $this->makeMemberRequest($request);
+            $mreqs      = array_merge($mreqs, ['id' => $request->id]);
+
             $mMember->editMember($mreqs);
             return responseMsg(true, "Member Details Updated", "");
         } catch (Exception $e) {

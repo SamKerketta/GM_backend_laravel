@@ -115,7 +115,7 @@ Route::controller(MemberController::class)->group(function () {
     Route::post('crud/member/list-member', 'memberList');         #_Get All the Member
     Route::post('crud/member/delete-member', 'deleteMember');     #_Soft Deletion of the Member
     Route::post('crud/member/update-member', 'updateMember');     #_Update the Member
-    Route::post('crud/member/detail', 'getMemberDetail');     #_Update the Member
+    Route::post('crud/member/detail', 'getMemberDetail');         #_Detail of the Member
 
     Route::post('biometric/logs', 'storeBiometric');             #_Biomertric Logs
     
