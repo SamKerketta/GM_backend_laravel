@@ -53,9 +53,9 @@ class PaymentController extends Controller
     }
 
     /**
-     * | Send Whatsaap Message
+     * | Send Whatsapp Message
      */
-    public function sendWhatsaap(Request $request)
+    public function sendWhatsapp(Request $request)
     {
         try {
             $request->validate([
@@ -85,7 +85,7 @@ class PaymentController extends Controller
                 ));
             }
 
-            return responseMsg(true, "Message sent succesfully.", $whatsapp['msg']['messages'][0]['message_status']);
+            return responseMsg(true, "Message sent succesfully.", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }

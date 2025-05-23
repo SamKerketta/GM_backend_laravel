@@ -127,7 +127,7 @@ Route::controller(MemberController::class)->group(function () {
  */
 Route::controller(PaymentController::class)->group(function () {
     Route::post('payment/offline', 'offlinePayment');         #_Offline Payment
-    Route::post('send-whatsaap', 'sendWhatsaap');                     #_Send Whatsaap
+    Route::post('send-whatsapp', 'sendWhatsapp');             #_Send Whatsapp
     /**
         Under Construction
      */
