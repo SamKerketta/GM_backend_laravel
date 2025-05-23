@@ -89,6 +89,21 @@ class MemberController extends Controller
     }
 
     /**
+     * | Get Member Details By Id
+     */
+    public function getMemberDetail(Request $request)
+    {
+        try {
+            $request->validate(['id' => 'required']);
+            $memberDetails = Member::find($request->id);
+
+            return responseMsg(true, "Member Details", $memberDetails);
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
      * | Make Member Request Format
      */
     public function makeMemberRequest($request)
