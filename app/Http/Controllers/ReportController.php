@@ -54,6 +54,7 @@ class ReportController extends Controller
             ]);
 
             $payments = Transaction::select(
+                'transactions.id as transaction_id',
                 'name',
                 'gender',
                 // 'membership_start',
@@ -67,7 +68,7 @@ class ReportController extends Controller
             )
                 ->leftjoin('members', 'members.id', 'transactions.member_id')
                 ->whereBetween('payment_date', [$request->startDate, $request->endDate])
-                ->orderBy('payment_date', 'asc')
+                ->orderBy('payment_date', 'desc')
                 ->get();
 
             return response()->json([
