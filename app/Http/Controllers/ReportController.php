@@ -49,9 +49,12 @@ class ReportController extends Controller
     {
         try {
             $request->validate([
-                'startDate' => 'required|date',
-                'endDate'   => 'required|date|after_or_equal:startDate',
+                'startDate' => 'nullable|date',
+                'endDate'   => 'nullable|date|after_or_equal:startDate',
             ]);
+
+            $startDate = $request->startDate ?? Carbon::now();
+            $endDate   = $request->endDate ?? Carbon::now();
 
             $payments = Transaction::select(
                 'transactions.id as transaction_id',
@@ -67,14 +70,18 @@ class ReportController extends Controller
                 'invoice_no',
             )
                 ->leftjoin('members', 'members.id', 'transactions.member_id')
-                ->whereBetween('payment_date', [$request->startDate, $request->endDate])
+                ->whereBetween('payment_date', [$startDate, $endDate])
                 ->orderBy('payment_date', 'desc')
                 ->get();
+
+            $totalAmount                    =  $payments->sum('amount_paid');
+            $paymentDetail['data']          = $payments; 
+            $paymentDetail['total_amount '] = $totalAmount; 
 
             return response()->json([
                 'status'  => true,
                 'message' => 'Payment report generated successfully.',
-                'data'    => $payments
+                'data'    => $paymentDetail
             ]);
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
@@ -125,7 +132,7 @@ class ReportController extends Controller
                 ->orderBy('members.name')
                 ->get();
 
-            return responseMsg(true, "Memeber with dues List",$membersWithDues);
+            return responseMsg(true, "Memeber with dues List", $membersWithDues);
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
