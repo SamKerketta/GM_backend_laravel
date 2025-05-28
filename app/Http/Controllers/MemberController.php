@@ -63,11 +63,10 @@ class MemberController extends Controller
 
             $perPage    = $request->perPage ?? 10;
             $name       = $request->name;
-            $phone     = $request->phone;
             $dueStatus  = $request->dueStatus;
 
             $mMember    = new Member();
-            $memberList = $mMember->fetchMember($name, $phone, $dueStatus)
+            $memberList = $mMember->fetchMember($name, $dueStatus)
                 ->paginate($perPage);
 
             // remove null fields in each item

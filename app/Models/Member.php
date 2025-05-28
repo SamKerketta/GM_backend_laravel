@@ -61,7 +61,7 @@ class Member extends Model
     /**
      * | Fetch Member List
      */
-    public function fetchMember($name = null, $phone = null, $dueStatus = null)
+    public function fetchMember($name = null, $dueStatus = null)
     {
         $today = Carbon::now()->toDateString();
         $query = Member::select(
@@ -74,11 +74,8 @@ class Member extends Model
             ->orderBy('name');
 
         if (!empty($name)) {
-            $query->where('name', 'like', '%' . $name . '%');
-        }
-
-        if (!empty($phone)) {
-            $query->where('phone', 'like', '%' . $phone . '%');
+            $query->where('name', 'like', '%' . $name . '%')
+                ->orwhere('phone', 'like', '%' . $name . '%');
         }
 
         if (!empty($dueStatus)) {
