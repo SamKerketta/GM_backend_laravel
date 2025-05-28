@@ -53,8 +53,8 @@ class ReportController extends Controller
                 'endDate'   => 'nullable|date|after_or_equal:startDate',
             ]);
 
-            $startDate = $request->startDate ?? Carbon::now()->format('Y-m-d');
-            $endDate   = $request->endDate ?? Carbon::now()->format('Y-m-d');
+            $startDate = $request->startDate ?? Carbon::now()->startOfDay();
+            $endDate   = $request->endDate ?? Carbon::now()->endOfDay();
 
             $payments = Transaction::select(
                 'transactions.id as transaction_id',
@@ -70,9 +70,9 @@ class ReportController extends Controller
                 'invoice_no',
             )
                 ->leftjoin('members', 'members.id', 'transactions.member_id')
-                ->whereBetween('payment_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                ->whereBetween('payment_date', [$startDate, $endDate])
                 ->orderBy('payment_date', 'desc');
-                // ->get();
+            // ->get();
 
             $payments     = paginator($payments, $request);
             $totalAmount  = collect($payments['data'])->sum('amount_paid');
@@ -138,5 +138,91 @@ class ReportController extends Controller
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
+    }
+
+    /**
+     * | Dashboard Reporting
+     * | Today’s Collection
+     * | Monthly Demand Target
+     * | Demand Till Date
+     * | Demand Remaining
+     * | Total Amount Received (This Month)
+     * | Total Members Paid
+     * | Unpaid Amount (This Month)
+     * | Members with Dues
+     */
+    public function dasboardReport(Request $request)
+    {
+        $today        = Carbon::today();
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth   = Carbon::now()->endOfMonth();
+
+        // 1. Today’s Collection
+        $todaysCollection = Transaction::whereDate('payment_date', $today)->sum('amount_paid');
+
+        // 2. Monthly Demand Target
+        $monthlyDemand = Member::select(DB::raw('SUM(plan_masters.price / (plan_masters.duration / 30)) as monthly_total'))
+            ->join('plan_masters', 'members.plan_id', '=', 'plan_masters.id')
+            ->where('members.status', 1)
+            ->value('monthly_total');
+
+        // 3. Demand Till Date (Linear accrual)
+        $daysPassed = $today->day;
+        $totalDays  = $today->daysInMonth;
+        $demandTillDate = round(($monthlyDemand / $totalDays) * $daysPassed);
+
+        // 4. Amount Paid This Month
+        $amountThisMonth = Transaction::whereBetween('payment_date', [$startOfMonth, $today])->sum('amount_paid');
+
+        // 5. Demand Remaining
+        $demandRemaining = $demandTillDate - $amountThisMonth;
+
+        // 6. Total Members Paid
+        $membersPaid = Transaction::whereBetween('payment_date', [$startOfMonth, $today])
+            ->distinct('member_id')
+            ->count('member_id');
+
+        // 7. Unpaid Amount (This Month)
+        // Assuming full monthly fee not paid = due
+        $unpaidAmount = Member::where('due_status', 1)
+            ->join('plan_masters', 'members.plan_id', '=', 'plan_masters.id')
+            ->select(DB::raw('SUM(plan_masters.price / (plan_masters.duration / 30)) as unpaid_total'))
+            ->value('unpaid_total');
+
+        // 8. Members With Dues
+        $membersWithDues = Member::where('due_status', 1)->count();
+
+        // 9. Total Demand: sum of all members' monthly fee (or actual plan price per month)
+        $totalDemand = Member::where('members.status', 1)
+            ->join('plan_masters', 'members.plan_id', '=', 'plan_masters.id')
+            ->select(DB::raw('SUM(plan_masters.price / (plan_masters.duration / 30)) as total'))
+            ->value('total') ?? 0;
+
+
+        // 10. Total Collection: total amount collected so far (all time)
+        $totalCollection = Transaction::sum('amount_paid');
+
+        // 11. Balance Due
+        $balanceDue = $totalDemand - $totalCollection;
+
+        // 12. Collection %
+        $collectionPercentage = $totalDemand > 0 ? ($totalCollection / $totalDemand) * 100 : 0;
+
+        $data = [
+            'today_collection'                 => round($todaysCollection, 2),
+            'monthly_demand_target'            => round($monthlyDemand, 2),
+            'demand_till_date'                 => round($demandTillDate, 2),
+            'demand_remaining'                 => round($demandRemaining, 2),
+            'total_amount_received_this_month' => round($amountThisMonth, 2),
+            'total_members_paid'               => $membersPaid,
+            'unpaid_amount'                    => round($unpaidAmount, 2),
+            'members_with_dues'                => $membersWithDues,
+            'total_demand'                     => round($totalDemand, 2),
+            'total_collection'                 => round($totalCollection, 2),
+            'balance_due'                      => round($balanceDue, 2),
+            'collection_percentage'            => round($collectionPercentage, 2),
+        ];
+
+        return responseMsg(true, "Dashboard Data", $data);
     }
 }
