@@ -29,7 +29,7 @@ class MemberController extends Controller
             $memberId      = $idGenerator->generateMemberId();
             $mreqs         = $this->makeMemberRequest($request);
             $mreqs         = array_merge($mreqs, ['member_id' => $memberId]);
-            
+
             $memberDetails = $mMember->addMember($mreqs);
             $msg           = "Member has been added succesfully and member id is  $memberId";
 
@@ -60,9 +60,14 @@ class MemberController extends Controller
     public function memberList(Request $request)
     {
         try {
+
             $perPage    = $request->perPage ?? 10;
+            $name       = $request->name;
+            $phone     = $request->phone;
+            $dueStatus  = $request->dueStatus;
+
             $mMember    = new Member();
-            $memberList = $mMember->fetchMember()
+            $memberList = $mMember->fetchMember($name, $phone, $dueStatus)
                 ->paginate($perPage);
 
             // remove null fields in each item

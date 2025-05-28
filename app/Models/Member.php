@@ -61,10 +61,10 @@ class Member extends Model
     /**
      * | Fetch Member List
      */
-    public function fetchMember()
+    public function fetchMember($name = null, $phone = null, $dueStatus = null)
     {
         $today = Carbon::now()->toDateString();
-        return Member::select(
+        $query = Member::select(
             '*',
             DB::raw("IF(membership_end < '$today', 1, 0) as due_status"),
             DB::raw("IF(membership_end < '$today', CEIL(DATEDIFF('$today', membership_end) / 30), 0) as months_due")
@@ -72,5 +72,19 @@ class Member extends Model
         )
             ->where('status', 1)
             ->orderBy('name');
+
+        if (!empty($name)) {
+            $query->where('name', 'like', '%' . $name . '%');
+        }
+
+        if (!empty($phone)) {
+            $query->where('phone', 'like', '%' . $phone . '%');
+        }
+
+        if (!empty($dueStatus)) {
+            $query->where('due_status', $dueStatus);
+        }
+
+        return $query;
     }
 }
