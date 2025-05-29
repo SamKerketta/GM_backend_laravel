@@ -90,7 +90,8 @@ class PaymentController extends Controller
                 'payment_date',
                 DB::raw("CONCAT(DATE_FORMAT(payment_date, '%h:%i %p')) as payment_time"),
                 'plan_name',
-                DB::raw("CONCAT(duration, ' month') as duration")
+                DB::raw("CONCAT(plan_masters.duration, ' ', IF(plan_masters.duration = 1, 'Month', 'Months')) as duration")
+                // DB::raw("CONCAT(duration, ' month') as duration")
             )
                 ->join('members', 'members.id', 'transactions.member_id')
                 ->join('plan_masters', 'plan_masters.id', 'members.plan_id')

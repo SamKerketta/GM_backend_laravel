@@ -53,8 +53,8 @@ class ReportController extends Controller
                 'endDate'   => 'nullable|date|after_or_equal:startDate',
             ]);
 
-            $startDate = $request->startDate ?? Carbon::now()->startOfDay();
-            $endDate   = $request->endDate ?? Carbon::now()->endOfDay();
+            $startDate = Carbon::parse($request->startDate)->startOfDay() ?? Carbon::now()->startOfDay();
+            $endDate   = Carbon::parse($request->endDate)->endOfDay() ?? Carbon::now()->endOfDay();
 
             $payments = Transaction::select(
                 'transactions.id as transaction_id',
