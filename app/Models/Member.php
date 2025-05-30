@@ -78,9 +78,9 @@ class Member extends Model
                 ->orwhere('phone', 'like', '%' . $name . '%');
         }
 
-        if (!empty($dueStatus)) {
-            $query->where('due_status', $dueStatus);
-        }
+        // if (!empty($dueStatus)) {
+        //     $query->where('due_status', $dueStatus);
+        // }
 
         return $query;
     }

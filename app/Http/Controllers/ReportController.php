@@ -122,15 +122,15 @@ class ReportController extends Controller
                     DB::raw("SUM(plan_masters.price) as total_plan_amount"),
                     DB::raw("IFNULL(SUM(transactions.amount_paid), 0) as total_paid"),
                     DB::raw("(SUM(plan_masters.price) - IFNULL(SUM(transactions.amount_paid), 0)) as total_due"),
-                    DB::raw("IF(SUM(transactions.amount_paid) < SUM(plan_masters.price), 'Dues', 'No Dues') as due_status")
+                    DB::raw("IF(membership_end < '$today', 'Dues', 'No Dues') as due_status")
                 )
                 ->join('plan_masters', 'plan_masters.id', '=', 'members.plan_id')
                 ->leftJoin('transactions', function ($join) {
                     $join->on('transactions.member_id', '=', 'members.id');
                 })
                 ->where('members.status', 1)
+                ->havingRaw("due_status = 'Dues'")
                 ->groupBy('members.id', 'members.name', 'members.membership_end')
-                ->havingRaw('total_due > 0')
                 ->orderBy('members.name')
                 ->get();
 
@@ -184,13 +184,20 @@ class ReportController extends Controller
 
         // 7. Unpaid Amount (This Month)
         // Assuming full monthly fee not paid = due
-        $unpaidAmount = Member::where('due_status', 1)
-            ->join('plan_masters', 'members.plan_id', '=', 'plan_masters.id')
-            ->select(DB::raw('SUM(plan_masters.price / (plan_masters.duration / 30)) as unpaid_total'))
+        $today = $today->format('Y-m-d');
+        $unpaidAmount = Member::join('plan_masters', 'members.plan_id', '=', 'plan_masters.id')
+            ->select(
+                DB::raw("IF(DATE(members.membership_end) < '$today', 1, 0) as due_status"),
+                DB::raw('SUM(plan_masters.price / (plan_masters.duration / 30)) as unpaid_total')
+            )
+            ->groupBy(DB::raw("due_status"))
+            ->havingRaw('due_status = 1')
             ->value('unpaid_total');
 
         // 8. Members With Dues
-        $membersWithDues = Member::where('due_status', 1)->count();
+        $membersWithDues = Member::select(DB::raw("IF(DATE(members.membership_end) < '$today', 1, 0) as due_status"))
+            ->havingRaw('due_status = 1')
+            ->count();
 
         // 9. Total Demand: sum of all members' monthly fee (or actual plan price per month)
         $totalDemand = Member::where('members.status', 1)
