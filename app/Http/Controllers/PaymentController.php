@@ -167,9 +167,12 @@ class PaymentController extends Controller
                     "templateId" => 'membership_reminder',
                     "status"     => $whatsapp['status'],
                     "response"   => $whatsapp['response'],
-
                 ]);
                 $this->whatsappLogs($whatsappReqs);
+
+                # Updating is_notified true
+                if ($whatsapp['status'] == 'success')
+                    $refMember->where('id', $request->memberId)->update(['notified' => 1]);
             }
 
             return responseMsg(true, "Message sent succesfully.", "");
