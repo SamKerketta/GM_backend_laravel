@@ -122,19 +122,19 @@ class ReportController extends Controller
                     DB::raw("SUM(plan_masters.price) as total_plan_amount"),
                     DB::raw("IFNULL(SUM(transactions.amount_paid), 0) as total_paid"),
                     DB::raw("(SUM(plan_masters.price) - IFNULL(SUM(transactions.amount_paid), 0)) as total_due"),
-                    DB::raw("IF(membership_end < '$today', 'Dues', 'No Dues') as due_status")
+                    DB::raw("'Dues'as due_status")
                 )
                 ->join('plan_masters', 'plan_masters.id', '=', 'members.plan_id')
                 ->leftJoin('transactions', function ($join) {
                     $join->on('transactions.member_id', '=', 'members.id');
                 })
                 ->where('members.status', 1)
-                ->havingRaw("due_status = 'Dues'")
+                ->havingRaw("total_due > 0")
                 ->groupBy('members.id', 'members.name', 'members.membership_end')
-                ->orderBy('members.name')
+                ->orderByDesc('total_due')
                 ->get();
 
-            return responseMsg(true, "Memeber with dues List", $membersWithDues);
+            return responseMsg(true, "Members with dues", $membersWithDues);
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }

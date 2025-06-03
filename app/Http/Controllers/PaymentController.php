@@ -20,17 +20,29 @@ class PaymentController extends Controller
     {
         try {
             $request->validate([
-                'memberId'  => 'required',
-                "planId"    => 'required'
+                'memberId'   => 'required',
+                "planId"     => 'required',
+                "amountPaid" => 'required',
+                "paymentMethod" => 'required',
+                "monthFrom"     => 'required||date',
             ]);
+
             $idGenerator  = new IdGenerator;
             $mTransaction = new Transaction();
             $mMember      = new Member();
             $planDtls     = PlanMaster::find($request->planId);
+            $todayDate    = Carbon::now()->format('d-m-Y');
+            $member       = Member::find($request->memberId);
+
+            if (!$member)
+                throw new Exception("Invalid member");
+
+            // Check if payment_date is before membership_end
+            if (strtotime($request->monthFrom) < strtotime($member->membership_end)) 
+                throw new Exception("Payment already done till $member->membership_end");
 
 
             $monthTill = Carbon::parse($request->monthFrom)->addMonth($planDtls->duration);
-
             $invoiceNo = $idGenerator->generateInvoiceNo();
             $mReqs = [
                 "member_id"      => $request->memberId,
@@ -52,7 +64,7 @@ class PaymentController extends Controller
             $paymentNotificationReqs = new Request([
                 "memberId"    => $request->memberId,
                 "amountPaid"  => $request->amountPaid,
-                "paymentDate" => $request->paymentDate,
+                "paymentDate" => $todayDate,
                 "monthFrom"   => $request->monthFrom,
                 "monthTill"   => $monthTill,
             ]);
