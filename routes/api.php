@@ -129,7 +129,7 @@ Route::controller(MemberController::class)->group(function () {
 Route::controller(PaymentController::class)->group(function () {
     Route::post('payment/offline', 'offlinePayment');         #_Offline Payment
     Route::post('payment/receipt', 'paymentReceipt');         #_Payment Receipt
-    Route::post('send-whatsapp', 'sendWhatsapp');             #_Send Whatsapp
+    Route::post('send-whatsapp', 'paymentReminder');          #_Whatsaap Payment Reminder
     Route::post('notifications/whatsapp/payment-success', 'sendWhatsAppPaymentSuccessNotification');          #_Payment Success Notification
     /**
         Under Construction

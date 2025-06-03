@@ -6,10 +6,12 @@ use App\IdGenerator;
 use App\Models\Member;
 use App\Models\PlanMaster;
 use App\Models\Transaction;
+use App\Models\WhatsappLog;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 
 class PaymentController extends Controller
 {
@@ -38,7 +40,7 @@ class PaymentController extends Controller
                 throw new Exception("Invalid member");
 
             // Check if payment_date is before membership_end
-            if (strtotime($request->monthFrom) < strtotime($member->membership_end)) 
+            if (strtotime($request->monthFrom) < strtotime($member->membership_end))
                 throw new Exception("Payment already done till $member->membership_end");
 
 
@@ -119,9 +121,9 @@ class PaymentController extends Controller
 
 
     /**
-     * | Send Reminder Whatsapp Message
+     * | Whatsapp Payment Reminder
      */
-    public function sendWhatsapp(Request $request)
+    public function paymentReminder(Request $request)
     {
         try {
             $request->validate([
@@ -131,6 +133,15 @@ class PaymentController extends Controller
 
             if (!$refMember)
                 throw new Exception("Requested user does not exists.");
+
+            $forMonth = $refMember->membership_end ? Carbon::parse($refMember->membership_end)->format('M-Y') : Carbon::now()->format('M-Y');
+
+            $dueAmountQuery =  new ReportController;
+            $dueDetail      =  $dueAmountQuery->memberdueQuery()
+                ->where('members.id', $request->memberId)->first();
+
+            if (!$dueDetail)
+                throw new Exception("Currentlly no dues.");
 
             #_Whatsaap Message
             if (strlen($refMember->phone) == 10) {
@@ -144,11 +155,21 @@ class PaymentController extends Controller
                             $refMember->name,
                             // "Tannu Fitness Center",
                             "Gears of Fead",
-                            "$500",
-                            "May-2025",
+                            '₹' .  $dueDetail->total_due,
+                            $forMonth,
                         ]
                     ]
                 ));
+
+                $whatsappReqs = new Request([
+                    "memberId"   => $request->memberId,
+                    "phone"      => $refMember->phone,
+                    "templateId" => 'membership_reminder',
+                    "status"     => $whatsapp['status'],
+                    "response"   => $whatsapp['response'],
+
+                ]);
+                $this->whatsappLogs($whatsappReqs);
             }
 
             return responseMsg(true, "Message sent succesfully.", "");
@@ -187,11 +208,34 @@ class PaymentController extends Controller
                         ]
                     ]
                 ));
+
+                $whatsappReqs = new Request([
+                    "memberId"   => $request->memberId,
+                    "phone"      => $refMember->phone,
+                    "templateId" => 'payment_success_notification',
+                    "status"     => $whatsapp['status'],
+                    "response"   => $whatsapp['response'],
+                ]);
+                $this->whatsappLogs($whatsappReqs);
             }
 
             return responseMsg(true, "Message sent succesfully.", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
+    }
+
+    public function whatsappLogs($request)
+    {
+        $mWhatsappLog = new WhatsappLog();
+        $requestLog = [
+            "member_id"    => $request->memberId,
+            "phone"        => $request->phone,
+            "template_id"  => $request->templateId,
+            "status"       => $request->status,
+            "response"     => $request->response,
+            "sent_at"      => Carbon::now()
+        ];
+        $mWhatsappLog->createLog($requestLog);
     }
 }

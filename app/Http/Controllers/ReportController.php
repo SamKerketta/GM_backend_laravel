@@ -112,32 +112,37 @@ class ReportController extends Controller
     public function fetchMemberDues()
     {
         try {
-            $today = Carbon::today()->toDateString();
-
-            $membersWithDues = DB::table('members')
-                ->select(
-                    'members.id',
-                    'members.name',
-                    'members.membership_end',
-                    DB::raw("SUM(plan_masters.price) as total_plan_amount"),
-                    DB::raw("IFNULL(SUM(transactions.amount_paid), 0) as total_paid"),
-                    DB::raw("(SUM(plan_masters.price) - IFNULL(SUM(transactions.amount_paid), 0)) as total_due"),
-                    DB::raw("'Dues'as due_status")
-                )
-                ->join('plan_masters', 'plan_masters.id', '=', 'members.plan_id')
-                ->leftJoin('transactions', function ($join) {
-                    $join->on('transactions.member_id', '=', 'members.id');
-                })
-                ->where('members.status', 1)
-                ->havingRaw("total_due > 0")
-                ->groupBy('members.id', 'members.name', 'members.membership_end')
-                ->orderByDesc('total_due')
-                ->get();
+            $membersWithDues = $this->memberdueQuery()->get();
 
             return responseMsg(true, "Members with dues", $membersWithDues);
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
+    }
+
+    /**
+     * | Query for membership due
+     */
+    public function memberdueQuery()
+    {
+        return DB::table('members')
+            ->select(
+                'members.id',
+                'members.name',
+                'members.membership_end',
+                DB::raw("SUM(plan_masters.price) as total_plan_amount"),
+                DB::raw("IFNULL(SUM(transactions.amount_paid), 0) as total_paid"),
+                DB::raw("(SUM(plan_masters.price) - IFNULL(SUM(transactions.amount_paid), 0)) as total_due"),
+                DB::raw("'Dues'as due_status")
+            )
+            ->join('plan_masters', 'plan_masters.id', '=', 'members.plan_id')
+            ->leftJoin('transactions', function ($join) {
+                $join->on('transactions.member_id', '=', 'members.id');
+            })
+            ->where('members.status', 1)
+            ->havingRaw("total_due > 0")
+            ->groupBy('members.id', 'members.name', 'members.membership_end')
+            ->orderByDesc('total_due');
     }
 
     /**
