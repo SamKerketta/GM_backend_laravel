@@ -83,7 +83,7 @@ class MemberController extends Controller
                 return collect($item)->map(function ($value) {
                     return is_null($value) ? '' : $value;
                 })->merge([
-                    'shift_name' => $shiftTypes[$item->shift_id] ?? 'Unknown Shift',
+                    'shift_name' => $shiftTypes[$item->shift_id] ?? 'Unknown',
                 ])->all();
             });
 
