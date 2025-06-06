@@ -30,6 +30,12 @@ class MemberController extends Controller
             $mreqs         = $this->makeMemberRequest($request);
             $mreqs         = array_merge($mreqs, ['member_id' => $memberId]);
 
+            // 🟡 Handle photo upload
+            if ($request->hasFile('photo')) {
+                $photoPath = $request->file('photo')->store('members', 'public');
+                $mreqs['photo'] = $photoPath; // saved as: members/xyz.jpg
+            }
+
             $memberDetails = $mMember->addMember($mreqs);
             $msg           = "Member has been added succesfully and member id is  $memberId";
 
@@ -70,11 +76,15 @@ class MemberController extends Controller
             $memberList = $mMember->fetchMember($name, $dueStatus)
                 ->paginate($perPage);
 
-            // remove null fields in each item
+            // Add shift_name and remove null fields
             $memberList->getCollection()->transform(function ($item) {
+                $shiftTypes = config('constants.SHIFT_TYPES');
+
                 return collect($item)->map(function ($value) {
                     return is_null($value) ? '' : $value;
-                })->all();
+                })->merge([
+                    'shift_name' => $shiftTypes[$item->shift_id] ?? 'Unknown Shift',
+                ])->all();
             });
 
             return responseMsg(true, "List of Members", $memberList);
@@ -110,6 +120,11 @@ class MemberController extends Controller
             $mMember    = new Member();
             $mreqs      = $this->makeMemberRequest($request);
             $mreqs      = array_merge($mreqs, ['id' => $request->id]);
+            // 🟡 Handle photo upload
+            if ($request->hasFile('photo')) {
+                $photoPath = $request->file('photo')->store('members', 'public');
+                $mreqs['photo'] = $photoPath; // saved as: members/xyz.jpg
+            }
 
             $mMember->editMember($mreqs);
             return responseMsg(true, "Member Details Updated", "");
@@ -148,8 +163,8 @@ class MemberController extends Controller
             "membership_start"  => $request->membershipStart,
             "membership_end"    => $request->membershipEnd,
             "plan_id"           => $request->planId,
+            "shift_id"          => $request->shiftId,
             "assigned_trainer"  => $request->assignedTrainer, // optional
-            "photo"             => $request->photo,
             "id_proof"          => $request->idProof,
             "status"            => $request->status ?? 1
         ];

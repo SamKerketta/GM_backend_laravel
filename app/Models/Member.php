@@ -39,6 +39,18 @@ class Member extends Model
         return $value ? Carbon::parse($value)->format('d-m-Y') : null;
     }
 
+    // Getting Photo url
+    public function getPhotoUrlAttribute()
+    {
+        return $this->photo ? url('storage/' . $this->photo) : null;
+    }
+
+    //
+    public function getShiftNameAttribute()
+    {
+        return config('constants.SHIFT_TYPES')[$this->shift_id] ?? 'Unknown Shift';
+    }
+
     /**
      * | Add Member Details
      */
@@ -66,6 +78,7 @@ class Member extends Model
         $today = Carbon::now()->toDateString();
         $query = Member::select(
             '*',
+            DB::raw("CONCAT('(storage/', photo) AS photo_url"),
             DB::raw("IF(membership_end < '$today', 1, 0) as due_status"),
             DB::raw("IF(membership_end < '$today', CEIL(DATEDIFF('$today', membership_end) / 30), 0) as months_due")
 

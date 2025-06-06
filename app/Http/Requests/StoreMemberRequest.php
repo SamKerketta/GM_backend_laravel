@@ -35,7 +35,7 @@ class StoreMemberRequest extends FormRequest
             'isPayment'         => 'required|boolean',
             'planId'            => 'required_if:isPayment,1|integer',
             'assignedTrainer'   => 'nullable|integer',
-            'photo'             => 'nullable|string|max:255', // or 'image|mimes:jpg,png' if it's a file upload
+            'photo'             => 'nullable|image|mimes:jpg,png', // or 'image|mimes:jpg,png' if it's a file upload
         ];
     }
 
