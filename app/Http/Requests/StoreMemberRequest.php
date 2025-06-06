@@ -32,7 +32,7 @@ class StoreMemberRequest extends FormRequest
             'address'           => 'required|string|max:200',
             'membershipStart'   => 'required|date',
             'membershipEnd'     => 'nullable|date|after_or_equal:membership_start',
-            'isPayment'         => 'required|boolean',
+            'isPayment'         => 'required',
             'planId'            => 'required_if:isPayment,1|integer',
             'shiftId'           => 'required|in:1,2,3',
             'assignedTrainer'   => 'nullable|integer',
