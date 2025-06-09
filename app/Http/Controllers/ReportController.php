@@ -150,6 +150,9 @@ class ReportController extends Controller
             ->orderByDesc('total_due');
     }
 
+    /**
+     * | Second Version of Dashboard 
+     */
     public function dasboardReport2(Request $request)
     {
         try {
@@ -157,24 +160,38 @@ class ReportController extends Controller
             $startOfMonth = Carbon::now()->startOfMonth();
             $endOfMonth   = Carbon::now()->endOfMonth();
 
+            # 1. Mpnthly Revenue 
             $monthlyRevenue = Transaction::select(
-                DB::raw("DATE_FORMAT(payment_date, '%b-%Y') as month_year"),
+                DB::raw("YEAR(payment_date) as year"),
+                DB::raw("MONTH(payment_date) as month"),
                 DB::raw("SUM(amount_paid) as total")
             )
-                ->where('payment_date', '>=', now()->subMonths(6)->startOfMonth())
-                ->groupBy(DB::raw("DATE_FORMAT(payment_date, '%b-%Y')"))
-                ->orderBy(DB::raw("MIN(payment_date)")) // Use ORDER BY on aggregate
+                ->where('payment_date', '>=', now()->subMonths(5)->startOfMonth()) // last 6 months
+                ->groupBy(DB::raw("YEAR(payment_date), MONTH(payment_date)"))
+                ->orderByRaw("YEAR(payment_date), MONTH(payment_date)")
                 ->get();
 
-            $labels1 = $monthlyRevenue->pluck('month')->toArray();
-            $series1 = $monthlyRevenue->pluck('total')->map(fn($val) => round($val, 2))->toArray();
+            // Prepare last 6 months labels (month name) and total values
+            $allMonths = collect(range(0, 5))->map(function ($i) {
+                $date = now()->subMonths(5 - $i);
+                return [
+                    'key'   => $date->format('Y-m'),       // unique key to match results
+                    'label' => $date->format('M'),         // short month name
+                ];
+            });
 
-            // Fill missing months (ensure 6 months)
-            $allMonths = collect(range(0, 5))->map(fn($i) => now()->subMonths(5 - $i)->format('M'));
-            $labels1 = $allMonths->toArray();
-            $series1 = $allMonths->map(function ($m) use ($monthlyRevenue) {
-                return (float) ($monthlyRevenue->firstWhere('month', $m)->total ?? 0);
-            })->toArray();
+            // Build series from monthlyRevenue results
+            $labels1 = [];
+            $series1 = [];
+
+            foreach ($allMonths as $month) {
+                $match = $monthlyRevenue->first(function ($item) use ($month) {
+                    return sprintf('%04d-%02d', $item->year, $item->month) === $month['key'];
+                });
+
+                $labels1[] = $month['label'];
+                $series1[] = $match ? (float) $match->total : 0;
+            }
 
             // --- Chart 2: DCB Report
             $totalCollection = Transaction::sum('amount_paid');
@@ -190,19 +207,35 @@ class ReportController extends Controller
 
             // --- Chart 3: Members Joined Monthly (Last 6 Months)
             $monthlyMembers = Member::select(
-                DB::raw("DATE_FORMAT(created_at, '%b-%Y') as month_year"),
-                DB::raw("COUNT(*) as count"),
-                DB::raw("MIN(created_at) as min_date") // for ordering
+                DB::raw("YEAR(created_at) as year"),
+                DB::raw("MONTH(created_at) as month"),
+                DB::raw("COUNT(*) as count")
             )
-                ->where('created_at', '>=', now()->subMonths(6)->startOfMonth())
-                ->groupBy(DB::raw("DATE_FORMAT(created_at, '%b-%Y')"))
-                ->orderBy('min_date') // now valid
+                ->where('created_at', '>=', now()->subMonths(5)->startOfMonth()) // last 6 months
+                ->groupBy(DB::raw("YEAR(created_at), MONTH(created_at)"))
+                ->orderByRaw("YEAR(created_at), MONTH(created_at)")
                 ->get();
 
-            $labels3 = $allMonths->toArray();
-            $series3 = $allMonths->map(function ($m) use ($monthlyMembers) {
-                return (int) ($monthlyMembers->firstWhere('month', $m)->count ?? 0);
-            })->toArray();
+            // Build last 6 months (month-year) labels and member counts
+            $allMonths = collect(range(0, 5))->map(function ($i) {
+                $date = now()->subMonths(5 - $i);
+                return [
+                    'key'   => $date->format('Y-m'),
+                    'label' => $date->format('M')
+                ];
+            });
+
+            $labels3 = [];
+            $series3 = [];
+
+            foreach ($allMonths as $month) {
+                $match = $monthlyMembers->first(function ($item) use ($month) {
+                    return sprintf('%04d-%02d', $item->year, $item->month) === $month['key'];
+                });
+
+                $labels3[] = $month['label'];
+                $series3[] = $match ? (int) $match->count : 0;
+            }
 
             // --- Chart 4: Shift Wise Members
             $shiftWise = Member::select('shift_id', DB::raw("COUNT(*) as total"))
