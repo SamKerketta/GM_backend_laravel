@@ -55,6 +55,7 @@ class ReportController extends Controller
 
             $startDate = Carbon::parse($request->startDate)->startOfDay() ?? Carbon::now()->startOfDay();
             $endDate   = Carbon::parse($request->endDate)->endOfDay() ?? Carbon::now()->endOfDay();
+            $name      = $request->name;
 
             $payments = Transaction::select(
                 'transactions.id as transaction_id',
@@ -73,6 +74,10 @@ class ReportController extends Controller
                 ->whereBetween('payment_date', [$startDate, $endDate])
                 ->orderBy('payment_date', 'desc');
             // ->get();
+
+            // ✅ Apply name filter if provided
+            if (!empty($name)) 
+                $payments->where('name', 'like', '%' . $name . '%');
 
             $payments     = paginator($payments, $request);
             $totalAmount  = collect($payments['data'])->sum('amount_paid');
