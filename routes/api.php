@@ -148,5 +148,6 @@ Route::controller(ReportController::class)->group(function () {
     Route::post('report/payment-report', 'paymentReport');            #_Date wise Payment Report
     Route::post('report/plans-expiring', 'expiringPlans');            #_Plans Expiring Report
     Route::post('report/overdue-members', 'fetchMemberDues');         #_Member Dues Report
-    Route::post('report/dashboard', 'dasboardReport');                #_Dashboard Report
+    // Route::post('report/dashboard', 'dasboardReport');                #_Dashboard Report
+    Route::post('report/dashboard', 'dasboardReport2');                #_Dashboard Report
 });
