@@ -53,8 +53,8 @@ class ReportController extends Controller
                 'endDate'   => 'nullable|date|after_or_equal:startDate',
             ]);
 
-            $startDate = Carbon::parse($request->startDate)->startOfDay() ?? Carbon::now()->startOfDay();
-            $endDate   = Carbon::parse($request->endDate)->endOfDay() ?? Carbon::now()->endOfDay();
+            $startDate = Carbon::parse($request->startDate)->startOfDay();
+            $endDate   = Carbon::parse($request->endDate)->endOfDay();
             $name      = $request->name;
 
             $payments = Transaction::select(
@@ -71,9 +71,11 @@ class ReportController extends Controller
                 'invoice_no',
             )
                 ->leftjoin('members', 'members.id', 'transactions.member_id')
-                ->whereBetween('payment_date', [$startDate, $endDate])
                 ->orderBy('payment_date', 'desc');
-            // ->get();
+
+            // ✅ Apply date filter if provided
+            if (!empty($request->startDate && $request->endDate))
+                $payments->whereBetween('payment_date', [$startDate, $endDate]);
 
             // ✅ Apply name filter if provided
             if (!empty($name))
@@ -83,7 +85,7 @@ class ReportController extends Controller
             $totalAmount  = collect($payments['data'])->sum('amount_paid');
 
             $paymentDetail['data']          = $payments;
-            $paymentDetail['total_amount '] = $totalAmount;
+            $paymentDetail['total_amount'] = $totalAmount;
 
             return response()->json([
                 'status'  => true,
