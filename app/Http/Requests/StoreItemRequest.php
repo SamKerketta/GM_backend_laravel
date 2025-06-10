@@ -44,9 +44,9 @@ class StoreItemRequest extends FormRequest
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(response()->json([
-            'status'=>false,
+            'status'  => false,
             'message' => 'Validation Error',
             'errors'  => $validator->errors()
-        ], 200));
+        ], 422));
     }
 }
