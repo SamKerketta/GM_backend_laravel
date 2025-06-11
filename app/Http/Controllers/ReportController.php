@@ -71,20 +71,25 @@ class ReportController extends Controller
                 'invoice_no',
             )
                 ->leftjoin('members', 'members.id', 'transactions.member_id')
-                ->orderBy('payment_date', 'desc');
+                ->orderBy('payment_date', 'desc')->active();
+
 
             // ✅ Apply date filter if provided
-            if (!empty($request->startDate && $request->endDate))
+            if (!empty($request->startDate && $request->endDate)) {
                 $payments->whereBetween('payment_date', [$startDate, $endDate]);
+            }
 
             // ✅ Apply name filter if provided
-            if (!empty($name))
+            if (!empty($name)) {
                 $payments->where('name', 'like', '%' . $name . '%');
+            }
+
+            $baseQuery = $payments;
 
             $payments     = paginator($payments, $request);
-            $totalAmount  = collect($payments['data'])->sum('amount_paid');
+            $totalAmount  = $baseQuery->sum('amount_paid');
 
-            $paymentDetail['data']          = $payments;
+            $paymentDetail['data']         = $payments;
             $paymentDetail['total_amount'] = $totalAmount;
 
             return response()->json([

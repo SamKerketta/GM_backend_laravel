@@ -43,7 +43,7 @@ class MemberController extends Controller
                 $paymentReqs =  new Request([
                     'memberId'      => $memberDetails->id,
                     'forMonth'      => $request->forMonth,
-                    "amountPaid"    => $request->amountPaid,
+                    "amountPaid"    => $request->payableAmt,
                     "paymentFor"    => $request->paymentFor,
                     "paymentDate"   => $request->paymentDate,
                     "paymentMethod" => $request->paymentMethod,

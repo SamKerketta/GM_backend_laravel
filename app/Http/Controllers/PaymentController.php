@@ -43,7 +43,6 @@ class PaymentController extends Controller
             if (strtotime($request->monthFrom) < strtotime($member->membership_end))
                 throw new Exception("Payment already done till $member->membership_end");
 
-
             $monthTill = Carbon::parse($request->monthFrom)->addMonth($planDtls->duration);
             $invoiceNo = $idGenerator->generateInvoiceNo();
             $mReqs = [

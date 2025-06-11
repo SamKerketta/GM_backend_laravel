@@ -11,6 +11,11 @@ class Transaction extends Model
     use HasFactory;
     protected $guarded = [];
 
+    public function scopeActive($query)
+    {
+        return $query->where('transactions.status', 1);
+    }
+
 
     // Format payment_date as d-m-Y
     public function getPaymentDateAttribute($value)
