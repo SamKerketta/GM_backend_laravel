@@ -84,10 +84,9 @@ class ReportController extends Controller
                 $payments->where('name', 'like', '%' . $name . '%');
             }
 
-            $baseQuery = $payments;
-
-            $payments     = paginator($payments, $request);
-            $totalAmount  = $baseQuery->sum('amount_paid');
+            // ✅ Clone query before pagination to get total sum
+            $totalAmount = (clone $payments)->sum('amount_paid');
+            $payments    = paginator($payments, $request);
 
             $paymentDetail['data']         = $payments;
             $paymentDetail['total_amount'] = $totalAmount;
