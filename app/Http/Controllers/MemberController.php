@@ -63,7 +63,6 @@ class MemberController extends Controller
 
     /**
      * | Fetch all Member List
-            Provide total count of member
      */
     public function memberList(Request $request)
     {
