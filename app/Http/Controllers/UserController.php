@@ -167,15 +167,15 @@ class UserController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'email'       => 'required',
                 'oldPassword' => 'required',
                 'newPassword' => 'required',
             ]);
             if ($validator->fails())
                 return validationError($validator);
 
-            $refUser = User::where('email', $request->email)
-                ->first();
+            $refUser = auth()->user();
+
+            $refUser = User::find($refUser->id);
 
             // If the User is existing
             if ($refUser) {
