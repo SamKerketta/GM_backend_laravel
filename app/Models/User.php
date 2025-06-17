@@ -60,4 +60,17 @@ class User extends Authenticatable
 
         $this->notify(new ResetPasswordNotification($url));
     }
+
+    public function updateUserDetail($request)
+    {
+        $refValues = User::where('id', $request->id)->first();
+        User::where('id', $request->id)
+            ->update(
+                [
+                    'name'    => $request->name   ?? $refValues->name,
+                    'email'   => $request->email  ?? $refValues->email,
+                    'mobile'  => $request->mobile ?? $refValues->mobile
+                ]
+            );
+    }
 }

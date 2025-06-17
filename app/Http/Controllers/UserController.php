@@ -93,8 +93,8 @@ class UserController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'email' => 'required|email',
-                // 'email' => 'required|email|exists:users',
+                // 'email' => 'required|email',
+                'email' => 'required|email|exists:users',
             ]);
             if ($validator->fails())
                 return validationError($validator);
@@ -212,6 +212,47 @@ class UserController extends Controller
             return responseMsg(true, "You have Logged Out", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Update User Details
+     * | 08
+         Not For Use
+     */
+    public function updateUser(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                "name"   => 'required',
+                "email"  => 'required',
+                "mobile" => 'required',
+            ]
+        );
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+        try {
+            $id = auth()->user()->id;
+            $user = User::find($id);
+            if (!$user)
+                throw new Exception("User Not Exist");
+            $stmt = $user->email == $request->email;
+
+            if (!$stmt) {
+                $check = User::where('email', $request->email)->first();
+                if ($check) {
+                    throw new Exception('Email Is Already Existing');
+                }
+            }
+
+            $mUser = new User();
+            $mUser->updateUserDetail($request);
+
+            return responseMsgs(true, "Successfully Updated", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "");
         }
     }
 }

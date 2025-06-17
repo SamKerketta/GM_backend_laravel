@@ -146,7 +146,7 @@ class PaymentController extends Controller
             if (strlen($refMember->phone) == 10) {
                 $whatsapp = (Whatsapp_Send(
                     $refMember->phone,
-                    'membership_reminder',
+                    'payment_reminder',
                     // $request->template_id,
                     [
                         "content_type" => "text",
@@ -163,7 +163,7 @@ class PaymentController extends Controller
                 $whatsappReqs = new Request([
                     "memberId"   => $request->memberId,
                     "phone"      => $refMember->phone,
-                    "templateId" => 'membership_reminder',
+                    "templateId" => 'payment_reminder',
                     "status"     => $whatsapp['status'],
                     "response"   => $whatsapp['response'],
                 ]);

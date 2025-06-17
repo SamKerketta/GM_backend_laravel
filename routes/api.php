@@ -36,6 +36,7 @@ Route::controller(UserController::class)->group(function () {
     Route::post('validate-password', 'validatePassword');                                           #_05
     Route::post('reset-password', 'resetPassword')->middleware('auth:sanctum');                     #_06
     Route::post('logout', 'logout')->middleware('auth:sanctum');                                    #_07    
+    Route::post('update-user', 'updateUser')->middleware('auth:sanctum');                           #_08    
 });
 
 
@@ -118,7 +119,7 @@ Route::controller(MemberController::class)->group(function () {
     Route::post('crud/member/detail', 'getMemberDetail');         #_Detail of the Member
 
     Route::post('biometric/logs', 'storeBiometric');             #_Biomertric Logs
-    
+
 });
 
 /**
