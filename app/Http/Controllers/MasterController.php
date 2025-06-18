@@ -33,7 +33,7 @@ class MasterController extends Controller
                 "vendor_address" => $request->vendorAddress
             ];
             $mVendorMaster = new VendorMaster();
-            $mVendorMaster->addVendor($mreqs);    
+            $mVendorMaster->addVendor($mreqs);
             return responseMsg(true, "Vendor Added Succesfully", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
@@ -115,7 +115,7 @@ class MasterController extends Controller
                 "category_name"    => $request->categoryName,
             ];
             $mItemCategoryMaster = new ItemCategoryMaster();
-            $mItemCategoryMaster->addItemCategory($mreqs);    
+            $mItemCategoryMaster->addItemCategory($mreqs);
             return responseMsg(true, "Item Category Added Succesfully", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
@@ -168,7 +168,8 @@ class MasterController extends Controller
             $mreqs =  [
                 'id'             => $request->id,
                 'category_name'  => $request->categoryName,
-                'status'         => $request->status ];
+                'status'         => $request->status
+            ];
 
             $mItemCategoryMaster = new ItemCategoryMaster();
             $mItemCategoryMaster->editItemCategory($mreqs);
@@ -181,7 +182,7 @@ class MasterController extends Controller
     /**
      * ================== CRUD OF INVENTORY ITEM ======================
      */
-    
+
     /**
      * | Add Data of Item in Inventory Master
      */
@@ -190,7 +191,7 @@ class MasterController extends Controller
         try {
             $mreqs = $this->makeItemRequest($request);
             $mInventory = new Inventory();
-            $mInventory->addItem($mreqs);    
+            $mInventory->addItem($mreqs);
             return responseMsg(true, "Item Added Succesfully", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
@@ -237,7 +238,7 @@ class MasterController extends Controller
         try {
             $request->validate(['id' => 'required']);
             $mreqs      = $this->makeItemRequest($request);
-            $mreqs      = array_merge($mreqs,['id'=>$request->id]);
+            $mreqs      = array_merge($mreqs, ['id' => $request->id]);
             $mInventory = new Inventory();
             $mInventory->editItem($mreqs);
             return responseMsg(true, "Inventory Item Details Updated", "");
@@ -268,10 +269,10 @@ class MasterController extends Controller
         ];
     }
 
-     /**
+    /**
      * ================== CRUD OF PLANS ======================
      */
-    
+
     /**
      * | Add Plans Data in Plans Master
      */
@@ -280,7 +281,7 @@ class MasterController extends Controller
         try {
             $mreqs = $this->makePlanRequest($request);
             $mPlanMaster = new PlanMaster();
-            $mPlanMaster->addPlan($mreqs);    
+            $mPlanMaster->addPlan($mreqs);
             return responseMsg(true, "Plan Added Succesfully", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
@@ -326,9 +327,9 @@ class MasterController extends Controller
     {
         try {
             $request->validate(['id' => 'required']);
-            $mreqs       = $this->makePlanRequest($request);
-            $mreqs       = array_merge($mreqs,['id'=>$request->id]);
-            
+            $mreqs  = $this->makePlanRequest($request);
+            $mreqs  = array_merge($mreqs, ['id' => $request->id]);
+
             $mPlanMaster = new PlanMaster();
             $mPlanMaster->editPlan($mreqs);
             return responseMsg(true, "Plan Details Updated", "");
@@ -343,13 +344,12 @@ class MasterController extends Controller
     public function makePlanRequest($request)
     {
         return [
-            "plan_name"                 => $request->planName,
-            "duration"                  => $request->duration,
-            "price"                     => $request->price,
-            "discount_percentage"       => $request->discount_percentage,
-            "description"               => $request->description,
-            "is_admission_fee_required" => $request->isAdmissionFeeRequired ?? 0,
-            "status"                    => $request->status ?? 1,
+            "plan_name"      => $request->planName,
+            "duration"       => $request->duration,
+            "price"          => $request->price,
+            "description"    => $request->description,
+            "admission_fee"  => $request->admissionFee ?? 0,
+            "status"         => $request->status ?? 1,
         ];
     }
 }

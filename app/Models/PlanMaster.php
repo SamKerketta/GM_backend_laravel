@@ -33,8 +33,8 @@ class PlanMaster extends Model
      */
     public function fetchPlan()
     {
-       return PlanMaster::where('status',1)
-                        ->orderBy('duration')
-                        ->get();
+        return PlanMaster::where('status', 1)
+            ->orderBy('duration')
+            ->get();
     }
 }
