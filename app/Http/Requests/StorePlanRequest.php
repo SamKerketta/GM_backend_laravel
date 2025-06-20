@@ -28,7 +28,7 @@ class StorePlanRequest extends FormRequest
             'duration'                  => 'required|integer',
             'price'                     => 'required|string|max:50',
             'description'               => 'nullable|string',
-            'admissionFee'              => 'nullable|boolean',
+            'admissionFee'              => 'nullable|numeric',
             'status'                    => 'nullable|boolean',
         ];
     }
