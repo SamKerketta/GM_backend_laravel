@@ -199,15 +199,12 @@ class PaymentController extends Controller
                     $refMember->phone,
                     'payment_success_notification',
                     [
-                        "content_type" => "text",
-                        [
-                            $refMember->name,
-                            '₹' . $request->amountPaid,
-                            "$monthFrom to $monthTill",              # Payment for month
-                            $request->paymentDate,                   # Transaction Date
-                            // "Tannu Fitness Center",
-                            "Gears of Fead",
-                        ]
+                        "name"              => $refMember->name,
+                        "amount_paid"       => '₹' . $request->amountPaid,
+                        "payment_for_month" => "$monthFrom to $monthTill",              # Payment for month
+                        "transaction_date"  => $request->paymentDate,                   # Transaction Date
+                        "gym_name"          => "Gears of Fead",
+                        // "gym_name" => "Tannu Fitness Center",
                     ]
                 ));
 

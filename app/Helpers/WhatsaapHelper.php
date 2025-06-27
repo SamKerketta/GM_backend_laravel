@@ -31,7 +31,7 @@ if (!function_exists('sendWhatsaapSMS')) {
                                     "type" => "image",
                                     "image" => [
                                         // "link" => $hospital->logo,
-                                        "link" => "https://yourdomain.com/image.jpg",
+                                        "link" => "http://13.61.12.255:5173/assets/GymPro.png",
                                     ]
                                 ]
                             ]
@@ -63,6 +63,60 @@ if (!function_exists('sendWhatsaapSMS')) {
         }
 
 
+        if ($templateid == 'payment_success_notification') {
+            $body = [
+                "messaging_product" => "whatsapp",
+                "to" => "91$mobileno",
+                "type" => "template",
+                "template" => [
+                    "name" => "payment_success_notification",
+                    "language" => [
+                        "code" => "en"
+                    ],
+                    "components" =>
+                    [
+                        [                                   // Header Logo
+                            "type" => "header",
+                            "parameters" => [
+                                [
+                                    "type" => "image",
+                                    "image" => [
+                                        // "link" => $hospital->logo,
+                                        "link" => "http://13.61.12.255:5173/assets/GymPro.png",
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            "type" => "body",
+                            "parameters" => [
+                                [
+                                    "type" => "text",
+                                    "text" => $message['name']
+                                ],
+                                [
+                                    "type" => "text",
+                                    "text" => $message['amount_paid']
+                                ],
+                                [
+                                    "type" => "text",
+                                    "text" => $message['payment_for_month']
+                                ],
+                                [
+                                    "type" => "text",
+                                    "text" => $message['transaction_date']
+                                ],
+                                [
+                                    "type" => "text",
+                                    "text" => $message['gym_name']
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+        }
+
         $mReqs['msg'] = json_encode($body, true);
 
         // $this->storeNotification();                                         // 1.1
@@ -81,90 +135,90 @@ if (!function_exists('sendWhatsaapSMS')) {
 
 
         # Old Code
-        $result      = Http::withHeaders([
+        // $result      = Http::withHeaders([
 
-            "Authorization" => "Bearer $bearerToken",
-            "contentType" => "application/json"
+        //     "Authorization" => "Bearer $bearerToken",
+        //     "contentType" => "application/json"
 
-        ])->post($url . $numberId . "/messages", [
-            "messaging_product" => "whatsapp",
-            "recipient_type" => "individual",
-            "to" => "+91$mobileno", //<--------------------- here
-            "type" => "template",
-            "template" => [
-                "name" => "$templateid",
-                "language" => [
-                    "code" => "en_US"
-                ],
-                "components" =>
-                [
-                    [                                   // Header Logo
-                        "type" => "header",
-                        "parameters" => [
-                            [
-                                "type" => "image",
-                                "image" => [
-                                    "link" => $hospital->logo
-                                ]
-                            ]
-                        ]
-                    ],
-                    [
-                        "type" => "body",
-                        "parameters" => [
-                            [
-                                "type" => "text",
-                                "text" => $this->_REQUESTS->patientName
-                            ],
-                            [
-                                "type" => "text",
-                                "text" => $hospital->name
-                            ],
-                            [
-                                "type" => "text",
-                                "text" => $this->_REQUESTS->appointmentDate
-                            ],
-                            [
-                                "type" => "text",
-                                "text" => $this->_REQUESTS->department
-                            ],
-                            [
-                                "type" => "text",
-                                "text" => $this->_REQUESTS->consultantDoctor
-                            ],
-                            [
-                                "type" => "text",
-                                "text" => $hospital->contact_no
-                            ],
-                            [
-                                "type" => "text",
-                                "text" => $hospital->email
-                            ],
-                            [
-                                "type" => "text",
-                                "text" => $hospital->name
-                            ],
-                            [
-                                "type" => "text",
-                                "text" => $this->_REQUESTS->mrNo
-                            ],
-                            [
-                                "type" => "text",
-                                "text" => $this->_REQUESTS->regNo
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ]);
-        $responseBody = json_decode($result->getBody(), true);
-        if (isset($responseBody["error"])) {
-            $response = ['response' => false, 'status' => 'failure', 'msg' => $responseBody];
-        } else {
-            $response = ['response' => true, 'status' => 'success', 'msg' => $responseBody];
-        }
+        // ])->post($url . $numberId . "/messages", [
+        //     "messaging_product" => "whatsapp",
+        //     "recipient_type" => "individual",
+        //     "to" => "+91$mobileno", //<--------------------- here
+        //     "type" => "template",
+        //     "template" => [
+        //         "name" => "$templateid",
+        //         "language" => [
+        //             "code" => "en_US"
+        //         ],
+        //         "components" =>
+        //         [
+        //             [                                   // Header Logo
+        //                 "type" => "header",
+        //                 "parameters" => [
+        //                     [
+        //                         "type" => "image",
+        //                         "image" => [
+        //                             "link" => $hospital->logo
+        //                         ]
+        //                     ]
+        //                 ]
+        //             ],
+        //             [
+        //                 "type" => "body",
+        //                 "parameters" => [
+        //                     [
+        //                         "type" => "text",
+        //                         "text" => $this->_REQUESTS->patientName
+        //                     ],
+        //                     [
+        //                         "type" => "text",
+        //                         "text" => $hospital->name
+        //                     ],
+        //                     [
+        //                         "type" => "text",
+        //                         "text" => $this->_REQUESTS->appointmentDate
+        //                     ],
+        //                     [
+        //                         "type" => "text",
+        //                         "text" => $this->_REQUESTS->department
+        //                     ],
+        //                     [
+        //                         "type" => "text",
+        //                         "text" => $this->_REQUESTS->consultantDoctor
+        //                     ],
+        //                     [
+        //                         "type" => "text",
+        //                         "text" => $hospital->contact_no
+        //                     ],
+        //                     [
+        //                         "type" => "text",
+        //                         "text" => $hospital->email
+        //                     ],
+        //                     [
+        //                         "type" => "text",
+        //                         "text" => $hospital->name
+        //                     ],
+        //                     [
+        //                         "type" => "text",
+        //                         "text" => $this->_REQUESTS->mrNo
+        //                     ],
+        //                     [
+        //                         "type" => "text",
+        //                         "text" => $this->_REQUESTS->regNo
+        //                     ]
+        //                 ]
+        //             ]
+        //         ]
+        //     ]
+        // ]);
+        // $responseBody = json_decode($result->getBody(), true);
+        // if (isset($responseBody["error"])) {
+        //     $response = ['response' => false, 'status' => 'failure', 'msg' => $responseBody];
+        // } else {
+        //     $response = ['response' => true, 'status' => 'success', 'msg' => $responseBody];
+        // }
 
-        return $response;
+        // return $response;
     }
 }
 
