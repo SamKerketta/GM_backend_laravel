@@ -149,16 +149,16 @@ class PaymentController extends Controller
                     'payment_reminder',
                     // $request->template_id,
                     [
-                        "content_type" => "text",
-                        [
-                            $refMember->name,
-                            // "Tannu Fitness Center",
-                            "Gears of Fead",
-                            '₹' .  $dueDetail->total_due,
-                            $forMonth,
-                        ]
+
+                        "name" => $refMember->name,
+                        // "gym_name"  => "Tannu Fitness Center",
+                        "gym_name"  => "Gears of Fead",
+                        "total_due" => '₹' .  $dueDetail->total_due,
+                        "for_month" => $forMonth,
                     ]
                 ));
+
+                // return $whatsapp;
 
                 $whatsappReqs = new Request([
                     "memberId"   => $request->memberId,
