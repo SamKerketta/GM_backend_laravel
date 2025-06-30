@@ -84,7 +84,7 @@ class Member extends Model
 
         )
             ->where('status', 1)
-            ->orderBy('membership_end');
+            ->orderByDesc('due_status');
 
         if (!empty($name)) {
             $query->where('name', 'like', '%' . $name . '%')
