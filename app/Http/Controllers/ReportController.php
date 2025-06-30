@@ -151,6 +151,7 @@ class ReportController extends Controller
                 $join->on('transactions.member_id', '=', 'members.id');
             })
             ->where('members.status', 1)
+            ->where('transactions.status', 1)
             ->havingRaw("total_due > 0")
             ->groupBy('members.id', 'members.name', 'members.membership_end')
             ->orderByDesc('total_due');
