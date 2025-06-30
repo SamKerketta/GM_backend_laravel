@@ -158,7 +158,7 @@ class PaymentController extends Controller
                     ]
                 ));
 
-                return $whatsapp;
+                // return $whatsapp;
 
                 $whatsappReqs = new Request([
                     "memberId"   => $request->memberId,
