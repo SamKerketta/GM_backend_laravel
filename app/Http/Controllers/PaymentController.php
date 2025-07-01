@@ -49,11 +49,11 @@ class PaymentController extends Controller
                 "member_id"      => $request->memberId,
                 "amount_paid"    => $request->amountPaid,
                 "payment_for"    => $request->paymentFor,
-                // "payment_date"   => $request->paymentDate,
                 "payment_method" => $request->paymentMethod,
                 "month_from"     => $request->monthFrom,
                 "month_till"     => $monthTill,
-                "invoice_no"     => $invoiceNo
+                "invoice_no"     => $invoiceNo,
+                "discount"       => $request->discount ?? 0,
             ];
 
             DB::beginTransaction();
@@ -135,12 +135,17 @@ class PaymentController extends Controller
 
             $forMonth = $refMember->membership_end ? Carbon::parse($refMember->membership_end)->format('M-Y') : Carbon::now()->format('M-Y');
 
-            $dueAmountQuery =  new ReportController;
-            $dueDetail      =  $dueAmountQuery->memberdueQuery()
-                ->where('members.id', $request->memberId)->first();
+            /**
+              rewrite
+             */
+            // $dueAmountQuery =  new ReportController;
+            // $dueDetail      =  $dueAmountQuery->memberdueQuery()
+            //     ->where('members.id', $request->memberId)->first();
+            // $a = Carbon::now()->format('d-m-Y');
 
-            if (!$dueDetail)
-                throw new Exception("Currentlly no dues.");
+            // if ($refMember->membership_end > $a)
+            // throw new Exception("Currently no dues.");
+
 
             #_Whatsaap Message
             if (strlen($refMember->phone) == 10) {

@@ -75,17 +75,9 @@ class MemberController extends Controller
             $memberList = $mMember->fetchMember($name, $dueStatus)
                 ->paginate($perPage);
 
-            // Step 1: Filter by due_status (already available in each record)
-            $filtered = $memberList->getCollection()->filter(function ($item) use ($dueStatus) {
-                if ($dueStatus === null || $dueStatus === '') {
-                    return true; // No filtering if not set
-                }
-                return $item->due_status == $dueStatus;
-            })->values(); // reindex the filtered array
-
-            // Step 2: Optional - Add shift_name and null cleanup
+            // Step 1: Optional - Add shift_name and null cleanup
             $shiftTypes = config('constants.SHIFT_TYPES');
-            $transformed = $filtered->map(function ($item) use ($shiftTypes) {
+            $transformed = $memberList->map(function ($item) use ($shiftTypes) {
                 return collect($item)->map(function ($value) {
                     return is_null($value) ? '' : $value;
                 })->merge([
@@ -93,7 +85,7 @@ class MemberController extends Controller
                 ])->all();
             });
 
-            // Step 3: Replace the collection in the paginator
+            // Step 2: Replace the collection in the paginator
             $memberList->setCollection($transformed);
 
             return responseMsg(true, "List of Members", $memberList);
@@ -171,6 +163,7 @@ class MemberController extends Controller
             "address"           => $request->address,
             "membership_start"  => $request->membershipStart,
             "membership_end"    => $request->membershipEnd,
+            // "arrear_amount"     => $request->arrearAmt,
             "plan_id"           => $request->planId,
             "shift_id"          => $request->shiftId,
             "assigned_trainer"  => $request->assignedTrainer, // optional

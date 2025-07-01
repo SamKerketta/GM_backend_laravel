@@ -61,6 +61,7 @@ class ReportController extends Controller
                 'transactions.id as transaction_id',
                 'name',
                 'gender',
+                'phone',
                 // 'membership_start',
                 // 'membership_end',
                 'amount_paid',
@@ -81,7 +82,8 @@ class ReportController extends Controller
 
             // ✅ Apply name filter if provided
             if (!empty($name)) {
-                $payments->where('name', 'like', '%' . $name . '%');
+                $payments->where('name', 'like', '%' . $name . '%')
+                    ->orwhere('phone', 'like', '%' . $name . '%');
             }
 
             // ✅ Clone query before pagination to get total sum
