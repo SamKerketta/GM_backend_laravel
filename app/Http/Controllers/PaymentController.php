@@ -58,8 +58,8 @@ class PaymentController extends Controller
 
             DB::beginTransaction();
             $mTransaction->store($mReqs);
-            // $mMember->where('id', $request->memberId)->update(['membership_end' => $monthTill]);
-            // DB::commit();
+            $mMember->where('id', $request->memberId)->update(['membership_end' => $monthTill]);
+            DB::commit();
 
             #_Request for whatsaap notification on success.
             $paymentNotificationReqs = new Request([
