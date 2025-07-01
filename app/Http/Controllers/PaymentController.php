@@ -46,20 +46,20 @@ class PaymentController extends Controller
             $monthTill = Carbon::parse($request->monthFrom)->addMonth($planDtls->duration);
             $invoiceNo = $idGenerator->generateInvoiceNo();
             $mReqs = [
-                "member_id"      => $request->memberId,
-                "amount_paid"    => $request->amountPaid,
-                "payment_for"    => $request->paymentFor,
-                "payment_method" => $request->paymentMethod,
-                "month_from"     => $request->monthFrom,
-                "month_till"     => $monthTill,
-                "invoice_no"     => $invoiceNo,
-                "discount"       => $request->discount ?? 0,
+                "member_id"       => $request->memberId,
+                "amount_paid"     => $request->amountPaid,
+                "payment_for"     => $request->paymentFor,
+                "payment_method"  => $request->paymentMethod,
+                "month_from"      => $request->monthFrom,
+                "month_till"      => $monthTill,
+                "invoice_no"      => $invoiceNo,
+                "discount_amount" => $request->discount ?? 0,
             ];
 
             DB::beginTransaction();
             $mTransaction->store($mReqs);
-            $mMember->where('id', $request->memberId)->update(['membership_end' => $monthTill]);
-            DB::commit();
+            // $mMember->where('id', $request->memberId)->update(['membership_end' => $monthTill]);
+            // DB::commit();
 
             #_Request for whatsaap notification on success.
             $paymentNotificationReqs = new Request([
