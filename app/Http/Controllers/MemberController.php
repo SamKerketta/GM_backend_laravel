@@ -49,6 +49,7 @@ class MemberController extends Controller
                     "paymentMethod" => $request->paymentMethod,
                     "monthFrom"     => $request->membershipStart,
                     "planId"        => $request->planId,
+                    "discount"      => $request->discount,
                 ]);
                 $paymentDetails = $paymentController->offlinePayment($paymentReqs);
                 $invoiceNo = $paymentDetails->original['data'];
