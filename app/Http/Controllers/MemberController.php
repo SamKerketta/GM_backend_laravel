@@ -164,7 +164,6 @@ class MemberController extends Controller
             "address"           => $request->address,
             "membership_start"  => $request->membershipStart,
             "membership_end"    => $request->membershipEnd,
-            // "arrear_amount"     => $request->arrearAmt,
             "plan_id"           => $request->planId,
             "shift_id"          => $request->shiftId,
             "assigned_trainer"  => $request->assignedTrainer, // optional

@@ -15,12 +15,14 @@ class CalculatePayment
 {
     public function calculatePayment($request)
     {
-        $mMember = new Member();
-        $idGenerator = new IdGenerator;
-
-        $invoiceNo = $idGenerator->generateInvoiceNo();
-
         try {
+            $mMember      = new Member();
+            $idGenerator  = new IdGenerator;
+            $mTransaction = new Transaction();
+            $invoiceNo    = $idGenerator->generateInvoiceNo();
+
+
+
 
             // Process payment based on request type
             switch (true) {
@@ -28,7 +30,7 @@ class CalculatePayment
                     return $this->processArrearPayment($request, $mMember);
 
                 case $request->isPartialPayment == true:
-                    return $this->processPartialPayment($request, $mMember);
+                    return $this->processFullOrPartialPayment($request, $mMember);
 
                 default:
                     return $this->processFullOrPartialPayment($request, $mMember);
@@ -53,7 +55,7 @@ class CalculatePayment
         if (!$member)
             throw new Exception("Member does not exists.");
 
-        $mReqs = [
+        return  $mReqs = [
             "member_id"       => $request->memberId,
             "amount_paid"     => $member->arrear_amount,
             "payment_for"     => $request->paymentFor,
@@ -62,10 +64,7 @@ class CalculatePayment
         ];
     }
 
-    private function processPartialPayment(Request $request, Member $mMember)
-    {
-        // Logic for processing partial payment
-    }
+
 
     private function processFullOrPartialPayment(Request $request, Member $mMember)
     {

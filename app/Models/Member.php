@@ -79,7 +79,7 @@ class Member extends Model
         $query = Member::select(
             '*',
             DB::raw("CONCAT('(storage/', photo) AS photo_url"),
-            DB::raw("IF(membership_end < '$today' OR arrear_amount > 0, 1, 0) as due_status"),
+            DB::raw("IF(membership_end < '$today' OR due_balance > 0, 1, 0) as due_status"),
             DB::raw("IF(membership_end < '$today', CEIL(DATEDIFF('$today', membership_end) / 30), 0) as months_due")
 
         )
@@ -92,7 +92,7 @@ class Member extends Model
         }
 
         if (!is_null($dueStatus)) {
-            $query->havingRaw("IF(membership_end < '$today' OR arrear_amount > 0, 1, 0) = ?", [$dueStatus]);
+            $query->havingRaw("IF(membership_end < '$today' OR due_balance > 0, 1, 0) = ?", [$dueStatus]);
         }
 
 
