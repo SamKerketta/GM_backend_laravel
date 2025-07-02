@@ -84,6 +84,7 @@ class PaymentController extends Controller
                 'invoice_no',
                 'month_from',
                 'month_till',
+                'due_balance',
                 'net_amount',
                 'arrear_amount',
                 'discount_amount',
@@ -280,7 +281,6 @@ class PaymentController extends Controller
             $amountPaid = $member->due_balance;
             $mReqs = [
                 "member_id"       => $request->memberId,
-                "net_amount"      => $amountPaid,
                 "amount_paid"     => $amountPaid,
                 "arrear_amount"   => $amountPaid,
                 "payment_for"     => $request->paymentFor,

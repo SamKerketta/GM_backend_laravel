@@ -19,6 +19,7 @@ class CalculatePayment
     private $_mTransaction;
     private $_invoiceNo;
     private $_reqs;
+    private $_memberDetails;
 
     public function __construct()
     {
@@ -37,24 +38,23 @@ class CalculatePayment
 
     public function readVariables()
     {
-        $this->_invoiceNo    = $this->_mTransaction->generateInvoiceNo();
-        $member = $mMember::find($request->memberId);
+        $this->_invoiceNo     = $this->_mTransaction->generateInvoiceNo();
+        $this->_memberDetails = $this->_mMember::find($this->_reqs->memberId);
     }
 
     public function calculatePayment()
     {
         try {
-
             // Process payment based on request type
             switch (true) {
                 case $request->isArrear == true:
-                    return $this->processArrearPayment($request, $mMember);
+                    return $this->processArrearPayment();
 
                 case $request->isPartialPayment == true:
-                    return $this->processFullOrPartialPayment($request, $mMember);
+                    return $this->processFullOrPartialPayment();
 
                 default:
-                    return $this->processFullOrPartialPayment($request, $mMember);
+                    return $this->processFullOrPartialPayment();
             }
 
             DB::beginTransaction();
@@ -70,7 +70,7 @@ class CalculatePayment
     /**
      * Process arrear payment
      */
-    private function processArrearPayment(Request $request, Member $mMember)
+    private function processArrearPayment()
     {
         $member = $mMember::find($request->memberId);
         if (!$member)
@@ -87,7 +87,7 @@ class CalculatePayment
 
 
 
-    private function processFullOrPartialPayment(Request $request, Member $mMember)
+    private function processFullOrPartialPayment()
     {
         // Logic for processing full payment
     }
