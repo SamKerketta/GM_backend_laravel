@@ -84,6 +84,12 @@ class PaymentController extends Controller
                 'invoice_no',
                 'month_from',
                 'month_till',
+                'net_amount',
+                'arrear_amount',
+                'discount_amount',
+                'payment_for',
+                DB::raw("IF(payment_for = 'plan', 'Plan', 'Arrear') as payment_for_type"),
+                'transactions.status',
                 'amount_paid',
                 'payment_method',
                 'payment_date',
@@ -121,17 +127,9 @@ class PaymentController extends Controller
 
             $forMonth = $refMember->membership_end ? Carbon::parse($refMember->membership_end)->format('M-Y') : Carbon::now()->format('M-Y');
 
-            /**
-              rewrite
-             */
-            // $dueAmountQuery =  new ReportController;
-            // $dueDetail      =  $dueAmountQuery->memberdueQuery()
-            //     ->where('members.id', $request->memberId)->first();
-            // $a = Carbon::now()->format('d-m-Y');
-
-            // if ($refMember->membership_end > $a)
-            // throw new Exception("Currently no dues.");
-
+            $dueDetail = $this->calculateDue($refMember);
+            if (!$dueDetail)
+                throw new Exception("No dues found for the member.");
 
             #_Whatsaap Message
             if (strlen($refMember->phone) == 10) {
@@ -169,6 +167,50 @@ class PaymentController extends Controller
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
+    }
+
+    /**
+     * | Calculate the total dues for a member
+     * | This function is used to calculate the total dues for a member
+     * | It takes the member ID as a parameter and returns the total dues
+     */
+    public function calculateDue($refMember)
+    {
+        $totalDueAmount = 0;
+        $today          = Carbon::now()->toDateString();
+        $dueDetail      = DB::table('members')
+            ->select(
+                'members.id',
+                'name',
+                'membership_end',
+                'due_balance',
+                'price',
+                DB::raw("IF(membership_end < '$today', 1, 0) as due_status"),
+                DB::raw("IF(due_balance > 0, 1, 0) as arrear_status"),
+            )
+            ->join('plan_masters', 'plan_masters.id', '=', 'members.plan_id')
+            ->where('members.status', 1)
+            ->where('members.id', $refMember->id)
+            ->first();
+
+        if ($dueDetail->due_status == 0 && $dueDetail->arrear_status == 0)
+            throw new Exception("No dues found for the member.");
+
+        if ($dueDetail->due_status == 1 && $dueDetail->arrear_status == 1) {
+            $totalDueAmount = $dueDetail->due_balance + $dueDetail->price;
+        }
+
+        if ($dueDetail->arrear_status == 1 && $dueDetail->due_status == 0) {
+            $totalDueAmount = $dueDetail->due_balance;
+        }
+        if ($dueDetail->due_status == 1 && $dueDetail->arrear_status == 0) {
+
+            $dueMonths = Carbon::parse($dueDetail->membership_end)->diffInMonths($today);
+            $totalDueAmount = $dueMonths * $dueDetail->price;
+        }
+
+        $dueDetail->total_due = $totalDueAmount;
+        return $dueDetail;
     }
 
     /**
@@ -257,7 +299,7 @@ class PaymentController extends Controller
 
 
         # Case 2: | Full Payment And Partial Payment
-        if ($request->isArrear == false) {
+        if ($request->isArrear == false || $request->isAdmission == true) {
             $admissionFee   = 0;
 
             $planDtls = $mPlanMaster::find($request->planId);
@@ -322,55 +364,6 @@ class PaymentController extends Controller
             'monthFrom'    => $mReqs['month_from'] ?? "",
             'monthTill'    => $mReqs['month_till'] ?? "",
         ];
-
-
-        # Case 3: | Partial Payment 
-        // if ($request->isPartialPayment == true && $request->isArrear == false) {
-        //     $admissionFee   = 0;
-
-        //     $planDtls = $mPlanMaster::find($request->planId);
-        //     if (!$planDtls)
-        //         throw new Exception("Invalid plan selected.");
-
-        //     if ($request->isAdmission == true) {
-        //         $admissionFee = $planDtls->admission_fee;
-        //     }
-        //     $planAmount     = $planDtls->price;
-        //     $arrearAmount   = $member->due_balance;
-        //     $discountAmount = $request->discount ?? 0;
-        //     $netAmount      = $planAmount + $admissionFee;
-
-        //     // Calculate final amount after discount
-        //     $finalAmount = $planAmount + $arrearAmount + $admissionFee - $discountAmount;
-        //     $dueAmount   = $finalAmount - $request->amountPaid;
-
-        //     // Ensure final amount is not negative
-        //     if ($finalAmount < 0)
-        //         throw new Exception("Discount cannot exceed the amount paid.");
-
-        //     $mReqs = [
-        //         "member_id"       => $request->memberId,
-        //         "net_amount"      => $netAmount,
-        //         "amount_paid"     => $request->amountPaid,
-        //         "arrear_amount"   => $arrearAmount,
-        //         "discount_amount" => $discountAmount,
-        //         "month_from"      => Carbon::parse($request->monthFrom)->format('Y-m-d'),
-        //         "month_till"      => Carbon::parse($request->monthFrom)->addMonth($planDtls->duration)->format('Y-m-d'),
-        //         "payment_for"     => $request->paymentFor,
-        //         "payment_method"  => $request->paymentMethod,
-        //         "invoice_no"      => $invoiceNo,
-        //     ];
-
-        //     DB::beginTransaction();
-        //     $mTransaction->store($mReqs);
-        //     $mMember->where('id', $request->memberId)->update([
-        //         'due_balance'    => $dueAmount,
-        //         'membership_end' => $mReqs['month_till'],
-        //         'plan_id'        => $request->planId
-        //     ]);
-        //     DB::commit();
-        //     return "success 3";
-        // }
     }
 
     /**

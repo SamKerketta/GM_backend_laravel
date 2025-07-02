@@ -13,16 +13,37 @@ use App\IdGenerator;
 
 class CalculatePayment
 {
-    public function calculatePayment($request)
+
+    private $_mMember;
+    private $_idGenerator;
+    private $_mTransaction;
+    private $_invoiceNo;
+    private $_reqs;
+
+    public function __construct()
+    {
+        $this->_mMember      = new Member();
+        $this->_idGenerator  = new IdGenerator;
+        $this->_mTransaction = new Transaction();
+    }
+
+
+    public function main($request)
+    {
+        $this->_reqs = $request->all();
+        $this->readVariables();
+        $this->calculatePayment();
+    }
+
+    public function readVariables()
+    {
+        $this->_invoiceNo    = $this->_mTransaction->generateInvoiceNo();
+        $member = $mMember::find($request->memberId);
+    }
+
+    public function calculatePayment()
     {
         try {
-            $mMember      = new Member();
-            $idGenerator  = new IdGenerator;
-            $mTransaction = new Transaction();
-            $invoiceNo    = $idGenerator->generateInvoiceNo();
-
-
-
 
             // Process payment based on request type
             switch (true) {
