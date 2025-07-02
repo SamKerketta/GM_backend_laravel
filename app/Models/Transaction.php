@@ -41,6 +41,6 @@ class Transaction extends Model
     public function store($req)
     {
         $mTransaction = new Transaction();
-        $mTransaction->create($req);
+        return $mTransaction->create($req);
     }
 }

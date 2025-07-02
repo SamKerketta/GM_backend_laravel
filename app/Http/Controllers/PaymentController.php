@@ -7,6 +7,7 @@ use App\Models\Member;
 use App\Models\PlanMaster;
 use App\Models\Transaction;
 use App\Models\WhatsappLog;
+use App\Services\CalculatePayment;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -22,54 +23,39 @@ class PaymentController extends Controller
     {
         try {
             $request->validate([
-                'memberId'   => 'required',
-                "planId"     => 'required',
-                "amountPaid" => 'required',
+                'memberId'      => 'required',
+                "planId"        => 'nullable|numeric',
+                "amountPaid"    => 'nullable|numeric',
                 "paymentMethod" => 'required',
-                "monthFrom"     => 'required||date',
+                "monthFrom"     => 'nullable|date|required_if:paymentFor,plan',
             ]);
 
-            $idGenerator  = new IdGenerator;
-            $mTransaction = new Transaction();
-            $mMember      = new Member();
-            $planDtls     = PlanMaster::find($request->planId);
-            $todayDate    = Carbon::now()->format('d-m-Y');
-            $member       = Member::find($request->memberId);
+            $calculatePayment  = new CalculatePayment;
+            $todayDate         = Carbon::now()->format('d-m-Y');
+            $member            = Member::find($request->memberId);
 
             if (!$member)
                 throw new Exception("Invalid member");
 
             // Check if payment_date is before membership_end
-            if (strtotime($request->monthFrom) < strtotime($member->membership_end))
+            if (strtotime($request->monthFrom) < strtotime($member->membership_end) && $request->paymentFor == 'plan')
                 throw new Exception("Payment already done till $member->membership_end");
 
-            $monthTill = Carbon::parse($request->monthFrom)->addMonth($planDtls->duration);
-            $invoiceNo = $idGenerator->generateInvoiceNo();
-            $mReqs = [
-                "member_id"       => $request->memberId,
-                "amount_paid"     => $request->amountPaid,
-                "payment_for"     => $request->paymentFor,
-                "payment_method"  => $request->paymentMethod,
-                "month_from"      => $request->monthFrom,
-                "month_till"      => $monthTill,
-                "invoice_no"      => $invoiceNo,
-                "discount_amount" => $request->discount ?? 0,
-            ];
+            $paymentDetail = $this->calculatePayment($request);
+            $invoiceNo = $paymentDetail['invoiceNo'];
+            // $paymentDetail = $calculatePayment->calculatePayment($request);
 
-            DB::beginTransaction();
-            $mTransaction->store($mReqs);
-            $mMember->where('id', $request->memberId)->update(['membership_end' => $monthTill]);
-            DB::commit();
-
-            #_Request for whatsaap notification on success.
-            $paymentNotificationReqs = new Request([
-                "memberId"    => $request->memberId,
-                "amountPaid"  => $request->amountPaid,
-                "paymentDate" => $todayDate,
-                "monthFrom"   => $request->monthFrom,
-                "monthTill"   => $monthTill,
-            ]);
-            $this->sendWhatsAppPaymentSuccessNotification($paymentNotificationReqs);
+            if (!$request->paymentFor == 'arrear') {
+                #_Request for whatsaap notification on success.
+                $paymentNotificationReqs = new Request([
+                    "memberId"    => $request->memberId,
+                    "amountPaid"  => $paymentDetail['amountPaid'],
+                    "paymentDate" => $todayDate,
+                    "monthFrom"   => $paymentDetail['monthFrom'],
+                    "monthTill"   => $paymentDetail['monthTill'],
+                ]);
+                $this->sendWhatsAppPaymentSuccessNotification($paymentNotificationReqs);
+            }
 
             return responseMsg(true, "Payment successful. Your Invoice no is " . $invoiceNo, $invoiceNo);
         } catch (Exception $e) {
@@ -229,6 +215,167 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * | Calculate Payment
+     */
+    public function calculatePayment($request)
+    {
+        # Variable assignments
+        $idGenerator  = new IdGenerator;
+        $mTransaction = new Transaction();
+        $mMember      = new Member();
+        $mPlanMaster  = new PlanMaster();
+
+        $member = $mMember::find($request->memberId);
+        if (!$member)
+            throw new Exception("Member does not exists.");
+
+        $invoiceNo = $idGenerator->generateInvoiceNo();
+
+        # Case 1 : | Only Arrear Payment
+
+        if ($request->isArrear == true) {
+            $amountPaid = $member->due_balance;
+            $mReqs = [
+                "member_id"       => $request->memberId,
+                "net_amount"      => $amountPaid,
+                "amount_paid"     => $amountPaid,
+                "arrear_amount"   => $amountPaid,
+                "payment_for"     => $request->paymentFor,
+                "payment_method"  => $request->paymentMethod,
+                "invoice_no"      => $invoiceNo,
+            ];
+
+            DB::beginTransaction();
+            $tranDtls = $mTransaction->store($mReqs);
+            $mMember->where('id', $request->memberId)->update([
+                'due_balance' => 0,
+                'last_tran_id' => $tranDtls->id,
+            ]);
+            DB::commit();
+        }
+
+
+        # Case 2: | Full Payment And Partial Payment
+        if ($request->isArrear == false) {
+            $admissionFee   = 0;
+
+            $planDtls = $mPlanMaster::find($request->planId);
+            if (!$planDtls)
+                throw new Exception("Invalid plan selected.");
+
+            if ($request->isAdmission == true)
+                $admissionFee = $planDtls->admission_fee;
+
+            $planAmount     = $planDtls->price;
+            $arrearAmount   = $member->due_balance;
+            $discountAmount = $request->discount ?? 0;
+            $netAmount      = $planAmount + $admissionFee;
+
+            // Calculate final amount after discount
+            $finalAmount = $planAmount + $arrearAmount  + $admissionFee - $discountAmount;
+
+            // Ensure final amount is not negative
+            if ($finalAmount < 0)
+                throw new Exception("Discount cannot exceed the amount paid.");
+
+            // Calculate due amount based on whether it's a partial payment
+            if ($request->isPartialPayment == true) {
+                $amountPaid = $request->amountPaid;
+                $dueAmount  = $finalAmount - $amountPaid;
+            } else {
+                $amountPaid = $finalAmount;
+                $dueAmount  = 0;
+            }
+            // Ensure amount paid is not greater than final amount
+            if ($amountPaid > $finalAmount)
+                throw new Exception("Amount paid cannot exceed the final amount.");
+
+            // Prepare data for transaction
+            $mReqs = [
+                "member_id"       => $request->memberId,
+                "net_amount"      => $netAmount,
+                "amount_paid"     => $amountPaid,
+                "arrear_amount"   => $arrearAmount,
+                "discount_amount" => $discountAmount,
+                "payment_for"     => $request->paymentFor,
+                "payment_method"  => $request->paymentMethod,
+                "month_from"      => Carbon::parse($request->monthFrom)->format('Y-m-d'),
+                "month_till"      => Carbon::parse($request->monthFrom)->addMonth($planDtls->duration)->format('Y-m-d'),
+                "invoice_no"      => $invoiceNo,
+            ];
+
+            DB::beginTransaction();
+            $tranDtls =  $mTransaction->store($mReqs);
+            $mMember->where('id', $request->memberId)->update([
+                'due_balance'    => $dueAmount,
+                'membership_end' => $mReqs['month_till'],
+                'plan_id'        => $request->planId,
+                'last_tran_id'   => $tranDtls->id,
+            ]);
+            DB::commit();
+        }
+
+        return [
+            'invoiceNo'    => $invoiceNo,
+            'amountPaid'   => $amountPaid,
+            'monthFrom'    => $mReqs['month_from'] ?? "",
+            'monthTill'    => $mReqs['month_till'] ?? "",
+        ];
+
+
+        # Case 3: | Partial Payment 
+        // if ($request->isPartialPayment == true && $request->isArrear == false) {
+        //     $admissionFee   = 0;
+
+        //     $planDtls = $mPlanMaster::find($request->planId);
+        //     if (!$planDtls)
+        //         throw new Exception("Invalid plan selected.");
+
+        //     if ($request->isAdmission == true) {
+        //         $admissionFee = $planDtls->admission_fee;
+        //     }
+        //     $planAmount     = $planDtls->price;
+        //     $arrearAmount   = $member->due_balance;
+        //     $discountAmount = $request->discount ?? 0;
+        //     $netAmount      = $planAmount + $admissionFee;
+
+        //     // Calculate final amount after discount
+        //     $finalAmount = $planAmount + $arrearAmount + $admissionFee - $discountAmount;
+        //     $dueAmount   = $finalAmount - $request->amountPaid;
+
+        //     // Ensure final amount is not negative
+        //     if ($finalAmount < 0)
+        //         throw new Exception("Discount cannot exceed the amount paid.");
+
+        //     $mReqs = [
+        //         "member_id"       => $request->memberId,
+        //         "net_amount"      => $netAmount,
+        //         "amount_paid"     => $request->amountPaid,
+        //         "arrear_amount"   => $arrearAmount,
+        //         "discount_amount" => $discountAmount,
+        //         "month_from"      => Carbon::parse($request->monthFrom)->format('Y-m-d'),
+        //         "month_till"      => Carbon::parse($request->monthFrom)->addMonth($planDtls->duration)->format('Y-m-d'),
+        //         "payment_for"     => $request->paymentFor,
+        //         "payment_method"  => $request->paymentMethod,
+        //         "invoice_no"      => $invoiceNo,
+        //     ];
+
+        //     DB::beginTransaction();
+        //     $mTransaction->store($mReqs);
+        //     $mMember->where('id', $request->memberId)->update([
+        //         'due_balance'    => $dueAmount,
+        //         'membership_end' => $mReqs['month_till'],
+        //         'plan_id'        => $request->planId
+        //     ]);
+        //     DB::commit();
+        //     return "success 3";
+        // }
+    }
+
+    /**
+     * | Store Whatsapp Logs
+     */
     public function whatsappLogs($request)
     {
         $mWhatsappLog = new WhatsappLog();
