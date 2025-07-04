@@ -195,7 +195,7 @@ class PaymentController extends Controller
      */
     public function sendWhatsAppPaymentSuccessNotification(Request $request)
     {
-        return $this->generateInvoicePdf($request->lastTranId);
+        // return $this->generateInvoicePdf($request->lastTranId);
         $gymName   = Config::get("constants.GYM_NAME");
         $monthFrom = Carbon::parse($request->monthFrom)->format('M');
         $monthTill = Carbon::parse($request->monthTill)->format('M');
