@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use PDF;
 
 class PaymentController extends Controller
 {
@@ -385,5 +386,21 @@ class PaymentController extends Controller
             "sent_at"      => Carbon::now()
         ];
         $mWhatsappLog->createLog($requestLog);
+    }
+
+    /**
+     * | Generate pdf document of invoice
+     */
+    public function generateInvoicePdf($id)
+    {
+        $data = [
+            'title' => 'Laravel PDF Example',
+            'date' => date('m/d/Y'),
+        ];
+
+        $pdf = PDF::loadView('invoice', $data);
+
+        // Display PDF in browser tab
+        return $pdf->stream('document.pdf');
     }
 }
