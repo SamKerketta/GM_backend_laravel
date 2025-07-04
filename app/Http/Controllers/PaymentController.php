@@ -373,9 +373,12 @@ class PaymentController extends Controller
         if (!$tranDetails)
             throw new Exception("Transaction not found.");
 
+        $paymentDate = Carbon::parse($tranDetails->payment_date)->format('d M, Y') . ' ' . Carbon::parse($tranDetails->payment_time)->format('h:i A');
+
         $data = [
             'title' => 'Laravel PDF Example',
             'transaction_id'   => $tranDetails->transaction_id,
+            'name'             => $tranDetails->name,
             'phone'            => $tranDetails->phone,
             'gender'           => $tranDetails->gender,
             'membership_end'   => $tranDetails->membership_end,
@@ -389,8 +392,7 @@ class PaymentController extends Controller
             'payment_for_type' => $tranDetails->payment_for_type,
             'amount_paid'      => $tranDetails->amount_paid,
             'payment_method'   => $tranDetails->payment_method,
-            'payment_date'     => $tranDetails->payment_date,
-            'payment_time'     => $tranDetails->payment_time,
+            'payment_date'     => $paymentDate,
             'plan_name'        => $tranDetails->plan_name,
             'duration'         => $tranDetails->duration,
         ];
