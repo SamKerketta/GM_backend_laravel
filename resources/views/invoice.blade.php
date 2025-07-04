@@ -11,9 +11,9 @@
 </style>
 </head>
 
-<body class="bg-light py-4">
+<body>
 
-    <div class="container bg-white shadow rounded p-4">
+    <div class="bg-white shadow rounded p-4">
         <!-- Header -->
         <div class="invoice-header mb-4"></div>
 
