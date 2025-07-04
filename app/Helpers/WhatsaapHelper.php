@@ -143,11 +143,11 @@ if (!function_exists('sendWhatsaapSMS')) {
 if (!function_exists('Whatsapp_Send')) {
     function Whatsapp_Send($mobileno, $templateid, array $message = [])
     {
-        // $mobileno = 8797770238;
+        $mobileno = 8797770238;
         // $mobileno = 7319867430;   # Sam
         // $mobileno = 9031248170;
         // $mobileno = 9153975142;
-        $mobileno = 6201675668;   # Guruji
+        // $mobileno = 6201675668;   # Guruji
         $res = sendWhatsaapSMS($mobileno, $templateid, $message);
         return $res;
     }
