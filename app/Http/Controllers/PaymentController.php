@@ -11,6 +11,7 @@ use App\Services\CalculatePayment;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
@@ -42,10 +43,10 @@ class PaymentController extends Controller
                 throw new Exception("Payment already done till $member->membership_end");
 
             $paymentDetail = $this->calculatePayment($request);
-            $invoiceNo = $paymentDetail['invoiceNo'];
+            $invoiceNo     = $paymentDetail['invoiceNo'];
             // $paymentDetail = $calculatePayment->calculatePayment($request);
 
-            if (!$request->paymentFor == 'arrear') {
+            if ($request->isArrear == false) {
                 #_Request for whatsaap notification on success.
                 $paymentNotificationReqs = new Request([
                     "memberId"    => $request->memberId,
@@ -53,6 +54,7 @@ class PaymentController extends Controller
                     "paymentDate" => $todayDate,
                     "monthFrom"   => $paymentDetail['monthFrom'],
                     "monthTill"   => $paymentDetail['monthTill'],
+                    "lastTranId"  => $paymentDetail['lastTranId'],
                 ]);
                 $this->sendWhatsAppPaymentSuccessNotification($paymentNotificationReqs);
             }
@@ -118,6 +120,8 @@ class PaymentController extends Controller
     public function paymentReminder(Request $request)
     {
         try {
+            $gymName = Config::get("constants.GYM_NAME");
+
             $request->validate([
                 'memberId' => 'required|numeric'
             ]);
@@ -137,12 +141,9 @@ class PaymentController extends Controller
                 $whatsapp = (Whatsapp_Send(
                     $refMember->phone,
                     'payment_reminder',
-                    // $request->template_id,
                     [
-
                         "name" => $refMember->name,
-                        // "gym_name"  => "Tannu Fitness Center",
-                        "gym_name"  => "Gears of Fead",
+                        "gym_name"  => $gymName,
                         "total_due" => '₹' .  $dueDetail->total_due,
                         "for_month" => $forMonth,
                     ]
@@ -217,10 +218,11 @@ class PaymentController extends Controller
     /**
      * | Send Notification on Payment Success
      */
-    public function sendWhatsAppPaymentSuccessNotification($request)
+    public function sendWhatsAppPaymentSuccessNotification(Request $request)
     {
+        $gymName   = Config::get("constants.GYM_NAME");
         $monthFrom = Carbon::parse($request->monthFrom)->format('M');
-        $monthTill = $request->monthTill->format('M');
+        $monthTill = Carbon::parse($request->monthTill)->format('M');
         try {
             $refMember = Member::find($request->memberId);
 
@@ -232,13 +234,14 @@ class PaymentController extends Controller
                 $whatsapp = (Whatsapp_Send(
                     $refMember->phone,
                     'payment_success_notification',
+                    // 'payment_success_with_invoice',
                     [
                         "name"              => $refMember->name,
                         "amount_paid"       => '₹' . $request->amountPaid,
                         "payment_for_month" => "$monthFrom to $monthTill",              # Payment for month
                         "transaction_date"  => $request->paymentDate,                   # Transaction Date
-                        "gym_name"          => "Gears of Fead",
-                        // "gym_name" => "Tannu Fitness Center",
+                        "gym_name"          => $gymName,
+                        // "transaction_id"    => $request->lastTranId,
                     ]
                 ));
 
@@ -363,6 +366,7 @@ class PaymentController extends Controller
             'amountPaid'   => $amountPaid,
             'monthFrom'    => $mReqs['month_from'] ?? "",
             'monthTill'    => $mReqs['month_till'] ?? "",
+            'lastTranId'   => $tranDtls->id,
         ];
     }
 

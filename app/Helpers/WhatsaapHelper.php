@@ -10,6 +10,7 @@ if (!function_exists('sendWhatsaapSMS')) {
         $bearerToken = Config::get("constants.WHATSAPP_TOKEN");
         $numberId    = Config::get("constants.WHATSAPP_NUMBER_ID");
         $url         = Config::get("constants.WHATSAPP_URL");
+        $appurl      = Config::get("constants.APP_URL");
 
         # New Code
         if ($templateid == 'payment_reminder') {
@@ -117,6 +118,64 @@ if (!function_exists('sendWhatsaapSMS')) {
             ];
         }
 
+        if ($templateid == 'payment_success_with_invoice') {
+            $body = [
+                "messaging_product" => "whatsapp",
+                "to" => "91$mobileno",
+                "type" => "template",
+                "template" => [
+                    "name" => "payment_success_with_invoice",
+                    "language" => [
+                        "code" => "en_US"
+                    ],
+                    "components" =>
+                    [
+                        [                                   // Header Logo
+                            "type" => "header",
+                            "parameters" => [
+                                [
+                                    "type" => "document",
+                                    "document" => [
+                                        "link"     => "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            "type" => "body",
+                            "parameters" => [
+                                [
+                                    "type" => "text",
+                                    "text" => $message['name']
+                                ],
+                                [
+                                    "type" => "text",
+                                    "text" => $message['amount_paid']
+                                ],
+                                [
+                                    "type" => "text",
+                                    "text" => $message['payment_for_month']
+                                ],
+                                [
+                                    "type" => "text",
+                                    "text" => $message['transaction_date']
+                                ],
+                                [
+                                    "type" => "text",
+                                    "text" => $message['gym_name']
+                                ],
+                                [
+                                    "type" => "text",
+                                    "text" => "http://yourdomain.com/invoice/74"
+                                    // "text" => $appurl . '/invoice/' . $message['transaction_id']
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+        }
+
         $mReqs['msg'] = json_encode($body, true);
 
         // $this->storeNotification();                                         // 1.1
@@ -139,7 +198,7 @@ if (!function_exists('Whatsapp_Send')) {
     function Whatsapp_Send($mobileno, $templateid, array $message = [])
     {
         // $mobileno = 8797770238;
-        // $mobileno = 6387148933;
+        // $mobileno = 7319867430;   # Sam
         // $mobileno = 9031248170;
         // $mobileno = 9153975142;
         // $mobileno = 6201675668;   # Guruji

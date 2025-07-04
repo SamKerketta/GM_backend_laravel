@@ -34,6 +34,7 @@ class CalculatePayment
         $this->_reqs = $request->all();
         $this->readVariables();
         $this->calculatePayment();
+        $this->storePayment();
     }
 
     public function readVariables()
@@ -46,20 +47,10 @@ class CalculatePayment
     {
         try {
             // Process payment based on request type
-            switch (true) {
-                case $request->isArrear == true:
-                    return $this->processArrearPayment();
-
-                case $request->isPartialPayment == true:
-                    return $this->processFullOrPartialPayment();
-
-                default:
-                    return $this->processFullOrPartialPayment();
-            }
-
-            DB::beginTransaction();
-            $mTransaction->store($mReqs);
-            DB::commit();
+            if ($this->_reqs->isArrear == true) {
+                $mReqs = $this->processArrearPayment();
+            } else
+                return $this->processFullOrPartialPayment();
         } catch (Exception $e) {
             DB::rollBack();
             Log::error("Payment calculation error: " . $e->getMessage());
@@ -72,23 +63,28 @@ class CalculatePayment
      */
     private function processArrearPayment()
     {
-        $member = $mMember::find($request->memberId);
-        if (!$member)
-            throw new Exception("Member does not exists.");
-
-        return  $mReqs = [
-            "member_id"       => $request->memberId,
-            "amount_paid"     => $member->arrear_amount,
-            "payment_for"     => $request->paymentFor,
-            "payment_method"  => $request->paymentMethod,
-            "invoice_no"      => $invoiceNo,
+        $dueBalance = $this->_memberDetails->due_balance;
+        $mReqs = [
+            "member_id"       => $this->_memberDetails->id,
+            "amount_paid"     => $dueBalance,
+            "arrear_amount"   => $dueBalance,
+            "payment_for"     => $this->_reqs->paymentFor,
+            "payment_method"  => $this->_reqs->paymentMethod,
+            "invoice_no"      => $this->_invoiceNo,
         ];
     }
 
 
-
+    /**
+     * | Process full or partial payment
+     */
     private function processFullOrPartialPayment()
     {
-        // Logic for processing full payment
+        // Logic for processing full or partial payment
+    }
+
+    private function storePayment()
+    {
+        //  Store the payment details in the database
     }
 }
