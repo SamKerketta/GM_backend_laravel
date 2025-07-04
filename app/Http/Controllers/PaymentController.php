@@ -397,10 +397,13 @@ class PaymentController extends Controller
             'title' => 'Laravel PDF Example',
             'date' => date('m/d/Y'),
         ];
+        // return view('invoice', $data);
 
         $pdf = PDF::loadView('invoice', $data);
 
         // Display PDF in browser tab
-        return $pdf->stream('document.pdf');
+        return response($pdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="document.pdf"');
     }
 }
