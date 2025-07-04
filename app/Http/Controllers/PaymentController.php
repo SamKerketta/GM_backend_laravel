@@ -76,36 +76,10 @@ class PaymentController extends Controller
             $request->validate([
                 'transactionId'  => 'required',
             ]);
-            $tranDetails = Transaction::select(
-                // 'members.*',
-                // 'transactions.*',
-                'transactions.id as transaction_id',
-                'name',
-                'phone',
-                'gender',
-                DB::raw("DATE_FORMAT(membership_end, '%d-%m-%Y') as membership_end"),
-                'invoice_no',
-                'month_from',
-                'month_till',
-                'due_balance',
-                'net_amount',
-                'arrear_amount',
-                'discount_amount',
-                'payment_for',
-                DB::raw("IF(payment_for = 'plan', 'Plan', 'Arrear') as payment_for_type"),
-                'transactions.status',
-                'amount_paid',
-                'payment_method',
-                'payment_date',
-                DB::raw("CONCAT(DATE_FORMAT(payment_date, '%h:%i %p')) as payment_time"),
-                'plan_name',
-                DB::raw("CONCAT(plan_masters.duration, ' ', IF(plan_masters.duration = 1, 'Month', 'Months')) as duration")
-                // DB::raw("CONCAT(duration, ' month') as duration")
-            )
-                ->join('members', 'members.id', 'transactions.member_id')
-                ->join('plan_masters', 'plan_masters.id', 'members.plan_id')
-                ->where('transactions.id', $request->transactionId)
-                ->first();
+            $mTransaction = new Transaction();
+            $tranDetails = $mTransaction->getTransactionDetails($request->transactionId);
+            if (!$tranDetails)
+                throw new Exception("Transaction not found.");
 
             return responseMsg(true, "Payment Receipt ",  $tranDetails);
         } catch (Exception $e) {
@@ -221,6 +195,7 @@ class PaymentController extends Controller
      */
     public function sendWhatsAppPaymentSuccessNotification(Request $request)
     {
+        return $this->generateInvoicePdf($request->lastTranId);
         $gymName   = Config::get("constants.GYM_NAME");
         $monthFrom = Carbon::parse($request->monthFrom)->format('M');
         $monthTill = Carbon::parse($request->monthTill)->format('M');
@@ -234,15 +209,15 @@ class PaymentController extends Controller
             if (strlen($refMember->phone) == 10) {
                 $whatsapp = (Whatsapp_Send(
                     $refMember->phone,
-                    'payment_success_notification',
-                    // 'payment_success_with_invoice',
+                    // 'payment_success_notification',
+                    'payment_success_with_invoice',
                     [
                         "name"              => $refMember->name,
                         "amount_paid"       => '₹' . $request->amountPaid,
                         "payment_for_month" => "$monthFrom to $monthTill",              # Payment for month
                         "transaction_date"  => $request->paymentDate,                   # Transaction Date
                         "gym_name"          => $gymName,
-                        // "transaction_id"    => $request->lastTranId,
+                        "transaction_id"    => $request->lastTranId,
                     ]
                 ));
 
@@ -393,9 +368,31 @@ class PaymentController extends Controller
      */
     public function generateInvoicePdf($id)
     {
+        $mTransaction = new Transaction();
+        $tranDetails = $mTransaction->getTransactionDetails($id);
+        if (!$tranDetails)
+            throw new Exception("Transaction not found.");
+
         $data = [
             'title' => 'Laravel PDF Example',
-            'date' => date('m/d/Y'),
+            'transaction_id'   => $tranDetails->transaction_id,
+            'phone'            => $tranDetails->phone,
+            'gender'           => $tranDetails->gender,
+            'membership_end'   => $tranDetails->membership_end,
+            'invoice_no'       => $tranDetails->invoice_no,
+            'month_from'       => $tranDetails->month_from,
+            'month_till'       => $tranDetails->month_till,
+            'due_balance'      => $tranDetails->due_balance,
+            'net_amount'       => $tranDetails->net_amount,
+            'arrear_amount'    => $tranDetails->arrear_amount,
+            'discount_amount'  => $tranDetails->discount_amount,
+            'payment_for_type' => $tranDetails->payment_for_type,
+            'amount_paid'      => $tranDetails->amount_paid,
+            'payment_method'   => $tranDetails->payment_method,
+            'payment_date'     => $tranDetails->payment_date,
+            'payment_time'     => $tranDetails->payment_time,
+            'plan_name'        => $tranDetails->plan_name,
+            'duration'         => $tranDetails->duration,
         ];
         // return view('invoice', $data);
 

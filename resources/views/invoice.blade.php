@@ -6,9 +6,11 @@
     <title>Invoice</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    {!! file_get_contents(public_path('assets/bootstrap.min.css')) !!}
-</style>
+    <style>
+        {
+            ! ! file_get_contents(public_path('assets/bootstrap.min.css')) ! !
+        }
+    </style>
 </head>
 
 <body>

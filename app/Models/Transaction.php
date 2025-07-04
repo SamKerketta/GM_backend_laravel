@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Transaction extends Model
 {
@@ -42,5 +43,40 @@ class Transaction extends Model
     {
         $mTransaction = new Transaction();
         return $mTransaction->create($req);
+    }
+    /**
+     * | Get Transaction Details
+     */
+    public function getTransactionDetails($transactionId)
+    {
+        $tranDetails = Transaction::select(
+            'transactions.id as transaction_id',
+            'name',
+            'phone',
+            'gender',
+            DB::raw("DATE_FORMAT(membership_end, '%d-%m-%Y') as membership_end"),
+            'invoice_no',
+            'month_from',
+            'month_till',
+            'due_balance',
+            'net_amount',
+            'arrear_amount',
+            'discount_amount',
+            'payment_for',
+            DB::raw("IF(payment_for = 'plan', 'Plan', 'Arrear') as payment_for_type"),
+            'transactions.status',
+            'amount_paid',
+            'payment_method',
+            'payment_date',
+            DB::raw("CONCAT(DATE_FORMAT(payment_date, '%h:%i %p')) as payment_time"),
+            'plan_name',
+            DB::raw("CONCAT(plan_masters.duration, ' ', IF(plan_masters.duration = 1, 'Month', 'Months')) as duration")
+        )
+            ->join('members', 'members.id', 'transactions.member_id')
+            ->join('plan_masters', 'plan_masters.id', 'members.plan_id')
+            ->where('transactions.id', $transactionId)
+            ->first();
+
+        return $tranDetails;
     }
 }

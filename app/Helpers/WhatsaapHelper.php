@@ -63,61 +63,6 @@ if (!function_exists('sendWhatsaapSMS')) {
             ];
         }
 
-
-        if ($templateid == 'payment_success_notification') {
-            $body = [
-                "messaging_product" => "whatsapp",
-                "to" => "91$mobileno",
-                "type" => "template",
-                "template" => [
-                    "name" => "payment_success_notification",
-                    "language" => [
-                        "code" => "en"
-                    ],
-                    "components" =>
-                    [
-                        [                                   // Header Logo
-                            "type" => "header",
-                            "parameters" => [
-                                [
-                                    "type" => "image",
-                                    "image" => [
-                                        // "link" => $hospital->logo,
-                                        "link" => "http://13.61.12.255:5173/assets/GymPro.png",
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            "type" => "body",
-                            "parameters" => [
-                                [
-                                    "type" => "text",
-                                    "text" => $message['name']
-                                ],
-                                [
-                                    "type" => "text",
-                                    "text" => $message['amount_paid']
-                                ],
-                                [
-                                    "type" => "text",
-                                    "text" => $message['payment_for_month']
-                                ],
-                                [
-                                    "type" => "text",
-                                    "text" => $message['transaction_date']
-                                ],
-                                [
-                                    "type" => "text",
-                                    "text" => $message['gym_name']
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ];
-        }
-
         if ($templateid == 'payment_success_with_invoice') {
             $body = [
                 "messaging_product" => "whatsapp",
@@ -136,7 +81,8 @@ if (!function_exists('sendWhatsaapSMS')) {
                                 [
                                     "type" => "document",
                                     "document" => [
-                                        "link"     => "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+                                        "link"         => $appurl . '/invoice/' . $message['transaction_id'],
+                                        "filename"     => "invoice.pdf",
                                     ]
                                 ]
                             ]
@@ -166,8 +112,8 @@ if (!function_exists('sendWhatsaapSMS')) {
                                 ],
                                 [
                                     "type" => "text",
-                                    "text" => "http://yourdomain.com/invoice/74"
-                                    // "text" => $appurl . '/invoice/' . $message['transaction_id']
+                                    // "text" => "http://65.0.73.240:8001/invoice/1"
+                                    "text" => $appurl . '/invoice/' . $message['transaction_id']
                                 ]
                             ]
                         ]
@@ -201,7 +147,7 @@ if (!function_exists('Whatsapp_Send')) {
         // $mobileno = 7319867430;   # Sam
         // $mobileno = 9031248170;
         // $mobileno = 9153975142;
-        // $mobileno = 6201675668;   # Guruji
+        $mobileno = 6201675668;   # Guruji
         $res = sendWhatsaapSMS($mobileno, $templateid, $message);
         return $res;
     }
