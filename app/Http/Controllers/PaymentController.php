@@ -77,7 +77,7 @@ class PaymentController extends Controller
                 'transactionId'  => 'required',
             ]);
             $mTransaction = new Transaction();
-            $tranDetails = $mTransaction->getTransactionDetails($request->transactionId);
+            $tranDetails  = $mTransaction->getTransactionDetails($request->transactionId);
             if (!$tranDetails)
                 throw new Exception("Transaction not found.");
 
@@ -193,9 +193,8 @@ class PaymentController extends Controller
     /**
      * | Send Notification on Payment Success
      */
-    public function sendWhatsAppPaymentSuccessNotification(Request $request)
+    public function sendWhatsAppPaymentSuccessNotification($request)
     {
-        // return $this->generateInvoicePdf($request->lastTranId);
         $gymName   = Config::get("constants.GYM_NAME");
         $monthFrom = Carbon::parse($request->monthFrom)->format('M');
         $monthTill = Carbon::parse($request->monthTill)->format('M');

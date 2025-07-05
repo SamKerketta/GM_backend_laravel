@@ -81,8 +81,9 @@ if (!function_exists('sendWhatsaapSMS')) {
                                 [
                                     "type" => "document",
                                     "document" => [
-                                        "link"         => $appurl . '/invoice/' . $message['transaction_id'],
-                                        "filename"     => "invoice.pdf",
+                                        "link"     => "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+                                        // "link"         => $appurl . '/invoice/' . $message['transaction_id'],
+                                        // "filename"     => "invoice.pdf",
                                     ]
                                 ]
                             ]
@@ -112,8 +113,9 @@ if (!function_exists('sendWhatsaapSMS')) {
                                 ],
                                 [
                                     "type" => "text",
+                                    "text" => "http://yourdomain.com/invoice/74"
                                     // "text" => "http://65.0.73.240:8001/invoice/1"
-                                    "text" => $appurl . '/invoice/' . $message['transaction_id']
+                                    // "text" => $appurl . '/invoice/' . $message['transaction_id']
                                 ]
                             ]
                         ]
@@ -143,7 +145,7 @@ if (!function_exists('sendWhatsaapSMS')) {
 if (!function_exists('Whatsapp_Send')) {
     function Whatsapp_Send($mobileno, $templateid, array $message = [])
     {
-        $mobileno = 8797770238;
+        // $mobileno = 8797770238;
         // $mobileno = 7319867430;   # Sam
         // $mobileno = 9031248170;
         // $mobileno = 9153975142;
