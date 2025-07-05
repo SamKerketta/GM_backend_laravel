@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
-        {!! file_get_contents(public_path('assets/bootstrap.min.css')) !!}
+         {!! file_get_contents(public_path('assets/bootstrap.min.css')) !!}
     </style>
 </head>
 
@@ -27,7 +27,7 @@
         <div class="row text-center mb-4">
             <div class="col-md-4">
                 <small class="text-muted">AMOUNT PAID:</small>
-                <div class="fw-bold">₹{{ number_format($amount_paid, 2) }}</div>
+                <div class="fw-bold">{{ number_format($amount_paid, 2) }}</div>
             </div>
             <div class="col-md-4">
                 <small class="text-muted">DATE PAID:</small>
@@ -55,23 +55,23 @@
                 </tr>
                 <tr>
                     <td>Net Amount</td>
-                    <td class="text-end">₹{{ number_format($net_amount, 2) }}</td>
+                    <td class="text-end">{{ number_format($net_amount, 2) }}</td>
                 </tr>
                 <tr>
                     <td>Arrear Amount</td>
-                    <td class="text-end">₹{{ number_format($arrear_amount, 2) }}</td>
+                    <td class="text-end">{{ number_format($arrear_amount, 2) }}</td>
                 </tr>
                 <tr>
                     <td>Discount</td>
-                    <td class="text-end">₹{{ number_format($discount_amount, 2) }}</td>
+                    <td class="text-end">{{ number_format($discount_amount, 2) }}</td>
                 </tr>
                 <tr class="fw-bold">
                     <td>Amount Paid</td>
-                    <td class="text-end">₹{{ number_format($amount_paid, 2) }}</td>
+                    <td class="text-end">{{ number_format($amount_paid, 2) }}</td>
                 </tr>
                 <tr class="fw-bold text-danger">
                     <td>Due Balance</td>
-                    <td class="text-end">₹{{ number_format($due_balance, 2) }}</td>
+                    <td class="text-end">{{ number_format($due_balance, 2) }}</td>
                 </tr>
             </tbody>
         </table>
