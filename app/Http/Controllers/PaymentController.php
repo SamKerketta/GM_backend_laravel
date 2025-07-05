@@ -255,6 +255,7 @@ class PaymentController extends Controller
         # Case 1 : | Only Arrear Payment
 
         if ($request->isArrear == true) {
+            $paymentFor = "arrear";
             $amountPaid = $member->due_balance;
             $mReqs = [
                 "member_id"       => $request->memberId,
@@ -278,6 +279,7 @@ class PaymentController extends Controller
         # Case 2: | Full Payment And Partial Payment
         if ($request->isArrear == false || $request->isAdmission == true) {
             $admissionFee   = 0;
+            $paymentFor = "plan";
 
             $planDtls = $mPlanMaster::find($request->planId);
             if (!$planDtls)
