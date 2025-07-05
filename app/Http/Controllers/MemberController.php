@@ -51,6 +51,7 @@ class MemberController extends Controller
                     "planId"           => $request->planId,
                     "discount"         => $request->discount,
                     "isPartialPayment" => $request->isPartialPayment ?? false,
+                    "isAdmission"      => $request->isAdmission ?? false,
                 ]);
                 $paymentDetails = $paymentController->offlinePayment($paymentReqs);
                 $invoiceNo = $paymentDetails->original['data'];
