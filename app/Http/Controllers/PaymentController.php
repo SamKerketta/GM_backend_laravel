@@ -319,7 +319,7 @@ class PaymentController extends Controller
                 "amount_paid"     => $amountPaid,
                 "arrear_amount"   => $arrearAmount,
                 "discount_amount" => $discountAmount,
-                "payment_for"     => $request->paymentFor,
+                "payment_for"     => $paymentFor,
                 "payment_method"  => $request->paymentMethod,
                 "month_from"      => Carbon::parse($request->monthFrom)->format('Y-m-d'),
                 "month_till"      => Carbon::parse($request->monthFrom)->addMonth($planDtls->duration)->format('Y-m-d'),
