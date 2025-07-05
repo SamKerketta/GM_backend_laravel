@@ -47,7 +47,7 @@ class PaymentController extends Controller
             $invoiceNo     = $paymentDetail['invoiceNo'];
             // $paymentDetail = $calculatePayment->calculatePayment($request);
 
-            if ($request->isArrear == false) {
+            if (is_bool($request->isArrear) == false) {
                 #_Request for whatsaap notification on success.
                 $paymentNotificationReqs = new Request([
                     "memberId"    => $request->memberId,
@@ -254,7 +254,7 @@ class PaymentController extends Controller
 
         # Case 1 : | Only Arrear Payment
 
-        if ($request->isArrear == true) {
+        if (to_bool($request->isArrear) == true) {
             $paymentFor = "arrear";
             $amountPaid = $member->due_balance;
             $mReqs = [
@@ -277,7 +277,7 @@ class PaymentController extends Controller
 
 
         # Case 2: | Full Payment And Partial Payment
-        if ($request->isArrear == false || $request->isAdmission == true) {
+        if (to_bool($request->isArrear) == false || to_bool($request->isAdmission) == true) {
             $admissionFee   = 0;
             $paymentFor = "plan";
 
@@ -285,7 +285,7 @@ class PaymentController extends Controller
             if (!$planDtls)
                 throw new Exception("Invalid plan selected.");
 
-            if ($request->isAdmission == true)
+            if (to_bool($request->isAdmission) == true)
                 $admissionFee = $planDtls->admission_fee;
 
             $planAmount     = $planDtls->price;
@@ -301,7 +301,7 @@ class PaymentController extends Controller
                 throw new Exception("Discount cannot exceed the amount paid.");
 
             // Calculate due amount based on whether it's a partial payment
-            if ($request->isPartialPayment == true) {
+            if (to_bool($request->isPartialPayment) == true) {
                 $amountPaid = $request->amountPaid;
                 $dueAmount  = $finalAmount - $amountPaid;
             } else {

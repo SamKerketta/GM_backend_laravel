@@ -165,7 +165,7 @@ class MemberController extends Controller
             "phone"             => $request->phone,
             "address"           => $request->address,
             "membership_start"  => $request->membershipStart,
-            "membership_end"    => $request->membershipEnd,
+            "membership_end"    => $request->endDate,
             "plan_id"           => $request->planId,
             "shift_id"          => $request->shiftId,
             "assigned_trainer"  => $request->assignedTrainer, // optional

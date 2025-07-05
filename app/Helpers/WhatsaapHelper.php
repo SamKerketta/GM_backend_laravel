@@ -117,6 +117,8 @@ if (!function_exists('sendWhatsaapSMS')) {
             ];
         }
 
+        // dd($body);
+
         $mReqs['msg'] = json_encode($body, true);
 
         // $this->storeNotification();                                         // 1.1

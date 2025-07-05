@@ -214,3 +214,10 @@ if (!function_exists("remove_null")) {
         return $collection;
     }
 }
+
+if (!function_exists("to_bool")) {
+    function to_bool($value): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+    }
+}
