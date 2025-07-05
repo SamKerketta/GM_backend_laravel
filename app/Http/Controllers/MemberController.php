@@ -41,15 +41,16 @@ class MemberController extends Controller
 
             if ($request->isPayment == true) {
                 $paymentReqs =  new Request([
-                    'memberId'      => $memberDetails->id,
-                    'forMonth'      => $request->forMonth,
-                    "amountPaid"    => $request->payableAmt,
-                    "paymentFor"    => $request->paymentFor,
-                    "paymentDate"   => $request->paymentDate,
-                    "paymentMethod" => $request->paymentMethod,
-                    "monthFrom"     => $request->membershipStart,
-                    "planId"        => $request->planId,
-                    "discount"      => $request->discount,
+                    'memberId'         => $memberDetails->id,
+                    'forMonth'         => $request->forMonth,
+                    "amountPaid"       => $request->amountPaid,
+                    "paymentFor"       => $request->paymentFor,
+                    "paymentDate"      => $request->paymentDate,
+                    "paymentMethod"    => $request->paymentMethod,
+                    "monthFrom"        => $request->membershipStart,
+                    "planId"           => $request->planId,
+                    "discount"         => $request->discount,
+                    "isPartialPayment" => $request->isPartialPayment ?? false,
                 ]);
                 $paymentDetails = $paymentController->offlinePayment($paymentReqs);
                 $invoiceNo = $paymentDetails->original['data'];
