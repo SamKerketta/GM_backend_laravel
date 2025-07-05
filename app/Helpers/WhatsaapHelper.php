@@ -81,9 +81,8 @@ if (!function_exists('sendWhatsaapSMS')) {
                                 [
                                     "type" => "document",
                                     "document" => [
-                                        "link"     => "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-                                        // "link"         => $appurl . '/invoice/' . $message['transaction_id'],
-                                        // "filename"     => "invoice.pdf",
+                                        "link"         => $appurl . '/invoice/' . $message['transaction_id'],
+                                        "filename"     => "invoice.pdf",
                                     ]
                                 ]
                             ]
@@ -111,12 +110,6 @@ if (!function_exists('sendWhatsaapSMS')) {
                                     "type" => "text",
                                     "text" => $message['gym_name']
                                 ],
-                                [
-                                    "type" => "text",
-                                    "text" => "http://yourdomain.com/invoice/74"
-                                    // "text" => "http://65.0.73.240:8001/invoice/1"
-                                    // "text" => $appurl . '/invoice/' . $message['transaction_id']
-                                ]
                             ]
                         ]
                     ]
@@ -129,7 +122,7 @@ if (!function_exists('sendWhatsaapSMS')) {
         // $this->storeNotification();                                         // 1.1
 
         $result = Http::withToken("$bearerToken")
-            ->post("https://graph.facebook.com/v17.0/$numberId/messages", $body);
+            ->post("https://graph.facebook.com/v22.0/$numberId/messages", $body);
 
 
         $responseBody = json_decode($result->getBody(), true);

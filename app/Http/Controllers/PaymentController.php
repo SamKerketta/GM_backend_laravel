@@ -208,7 +208,6 @@ class PaymentController extends Controller
             if (strlen($refMember->phone) == 10) {
                 $whatsapp = (Whatsapp_Send(
                     $refMember->phone,
-                    // 'payment_success_notification',
                     'payment_success_with_invoice',
                     [
                         "name"              => $refMember->name,
