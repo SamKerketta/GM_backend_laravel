@@ -25,9 +25,9 @@ class StoreMemberRequest extends FormRequest
     {
         return [
             'name'              => 'required|string|max:100',
-            'dob'               => 'required|date',
+            'dob'               => 'nullable|date',
             'gender'            => 'required|in:male,female,other', // Fixed syntax
-            'email'             => 'required|email|max:100|unique:members,email',
+            'email'             => 'nullable|email|max:100',
             'phone'             => 'required|string|max:15|unique:members,phone',
             'address'           => 'required|string|max:200',
             'membershipStart'   => 'required|date',
