@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreMemberRequest;
+use App\Http\Requests\UpdateMemberRequest;
 use App\IdGenerator;
 use App\Models\AttendanceLog;
 use App\Models\Member;
@@ -117,13 +118,26 @@ class MemberController extends Controller
     /**
      * | Update Member Details
      */
-    public function updateMember(StoreMemberRequest $request)
+    public function updateMember(UpdateMemberRequest $request)
     {
+        $mMember    = new Member();
         try {
-            $request->validate(['id' => 'required']);
-            $mMember    = new Member();
-            $mreqs      = $this->makeMemberRequest($request);
-            $mreqs      = array_merge($mreqs, ['id' => $request->id]);
+            if (isset($request->phone)) {
+                $existance =  $mMember->checkPhoneExistanceByMemberId($request->id, $request->phone);
+                if ($existance) {
+                    throw new Exception("The Mobile No Already Existing to other member");
+                }
+            }
+            $mreqs = [
+                "id"                => $request->id,
+                "name"              => $request->name,
+                "dob"               => $request->dob,
+                "gender"            => $request->gender,
+                "email"             => $request->email,
+                "phone"             => $request->phone,
+                "address"           => $request->address,
+            ];
+
             // 🟡 Handle photo upload
             if ($request->hasFile('photo')) {
                 $photoPath = $request->file('photo')->store('members', 'public');

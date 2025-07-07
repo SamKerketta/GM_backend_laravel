@@ -98,4 +98,17 @@ class Member extends Model
 
         return $query;
     }
+
+    /**
+     * | Check Existance
+     */
+    public function checkPhoneExistanceByMemberId($id, $phone)
+    {
+        $result = self::where('status')
+            ->where('id', '<>', $id)
+            ->where('phone', $phone)
+            ->check();
+
+        return $result;
+    }
 }
