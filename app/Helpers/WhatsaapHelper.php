@@ -63,15 +63,15 @@ if (!function_exists('sendWhatsaapSMS')) {
             ];
         }
 
-        if ($templateid == 'payment_success_with_invoice') {
+        if ($templateid == 'payment_success_notification') {
             $body = [
                 "messaging_product" => "whatsapp",
                 "to" => "91$mobileno",
                 "type" => "template",
                 "template" => [
-                    "name" => "payment_success_with_invoice",
+                    "name" => "payment_success_notification",
                     "language" => [
-                        "code" => "en_US"
+                        "code" => "en"
                     ],
                     "components" =>
                     [
@@ -79,10 +79,10 @@ if (!function_exists('sendWhatsaapSMS')) {
                             "type" => "header",
                             "parameters" => [
                                 [
-                                    "type" => "document",
-                                    "document" => [
-                                        "link"         => $appurl . '/invoice/' . $message['transaction_id'],
-                                        "filename"     => "invoice.pdf",
+                                    "type" => "image",
+                                    "image" => [
+                                        // "link" => $hospital->logo,
+                                        "link" => "http://13.61.12.255:5173/assets/GymPro.png",
                                     ]
                                 ]
                             ]
@@ -109,13 +109,67 @@ if (!function_exists('sendWhatsaapSMS')) {
                                 [
                                     "type" => "text",
                                     "text" => $message['gym_name']
-                                ],
+                                ]
                             ]
                         ]
                     ]
                 ]
             ];
         }
+
+        // if ($templateid == 'payment_success_with_invoice') {
+        //     $body = [
+        //         "messaging_product" => "whatsapp",
+        //         "to" => "91$mobileno",
+        //         "type" => "template",
+        //         "template" => [
+        //             "name" => "payment_success_with_invoice",
+        //             "language" => [
+        //                 "code" => "en_US"
+        //             ],
+        //             "components" =>
+        //             [
+        //                 [                                   // Header Logo
+        //                     "type" => "header",
+        //                     "parameters" => [
+        //                         [
+        //                             "type" => "document",
+        //                             "document" => [
+        //                                 "link"         => $appurl . '/invoice/' . $message['transaction_id'],
+        //                                 "filename"     => "invoice.pdf",
+        //                             ]
+        //                         ]
+        //                     ]
+        //                 ],
+        //                 [
+        //                     "type" => "body",
+        //                     "parameters" => [
+        //                         [
+        //                             "type" => "text",
+        //                             "text" => $message['name']
+        //                         ],
+        //                         [
+        //                             "type" => "text",
+        //                             "text" => $message['amount_paid']
+        //                         ],
+        //                         [
+        //                             "type" => "text",
+        //                             "text" => $message['payment_for_month']
+        //                         ],
+        //                         [
+        //                             "type" => "text",
+        //                             "text" => $message['transaction_date']
+        //                         ],
+        //                         [
+        //                             "type" => "text",
+        //                             "text" => $message['gym_name']
+        //                         ],
+        //                     ]
+        //                 ]
+        //             ]
+        //         ]
+        //     ];
+        // }
 
         // dd($body);
 
