@@ -107,7 +107,7 @@ class Member extends Model
         $result = self::where('status')
             ->where('id', '<>', $id)
             ->where('phone', $phone)
-            ->check();
+            ->exists();
 
         return $result;
     }
