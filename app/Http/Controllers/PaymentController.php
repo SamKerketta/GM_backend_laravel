@@ -261,6 +261,7 @@ class PaymentController extends Controller
                 "member_id"       => $request->memberId,
                 "amount_paid"     => $amountPaid,
                 "arrear_amount"   => $amountPaid,
+                "payment_date"    => Carbon::now(),
                 "payment_for"     => $request->paymentFor,
                 "payment_method"  => $request->paymentMethod,
                 "invoice_no"      => $invoiceNo,
