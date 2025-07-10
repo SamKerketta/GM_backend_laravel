@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Validator;
 use PDF;
 
 class PaymentController extends Controller
@@ -407,5 +408,53 @@ class PaymentController extends Controller
         return response($pdf->output(), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'inline; filename="document.pdf"');
+    }
+
+    // 
+    public function deleteTransaction(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'tranId' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => "Validation Error",
+                'data' => $validator->errors()
+            ], 422);
+        }
+
+        $mTransaction = new Transaction();
+        $mMember = new Member();
+        try {
+            $transaction = $mTransaction::find($req->tranId);
+            if (collect($transaction)->isEmpty()) {
+                throw new Exception("Transaction not available with this id");
+            }
+
+            $member = $mMember::find($transaction->member_id);
+            if (collect($member)->isEmpty()) {
+                throw new Exception("Member not available with this id");
+            }
+
+            DB::beginTransaction();
+            $transaction->status = 0;
+            $transaction->save();
+            // If the transaction is its last transaction
+            if ($member->last_tran_id == $transaction->id) {
+                $member->due_balance = $transaction->arrear_amount;
+                $member->membership_end = Carbon::createFromFormat('d-m-Y',  $transaction->month_from)->format('Y-m-d');
+                $member->save();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+                'data' => []
+            ]);
+        }
     }
 }

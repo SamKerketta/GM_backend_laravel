@@ -137,6 +137,7 @@ Route::controller(PaymentController::class)->group(function () {
      */
     Route::post('payment/initiate', 'initiatePayment');        #_
     Route::post('payment/initiate', 'initiatePayment');        #_
+    Route::post('delete-transaction', 'deleteTransaction');
 });
 
 /**
