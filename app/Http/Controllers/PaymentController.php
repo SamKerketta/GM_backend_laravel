@@ -444,10 +444,17 @@ class PaymentController extends Controller
             // If the transaction is its last transaction
             if ($member->last_tran_id == $transaction->id) {
                 $member->due_balance = $transaction->arrear_amount;
-                $member->membership_end = Carbon::createFromFormat('d-m-Y',  $transaction->month_from)->format('Y-m-d');
+                if (isset($transaction->month_from)) {
+                    $member->membership_end = Carbon::createFromFormat('d-m-Y',  $transaction->month_from)->format('Y-m-d');
+                }
                 $member->save();
             }
             DB::commit();
+            return response()->json([
+                'status' => true,
+                'message' => "Transaction Successfully Deleted",
+                'data' => []
+            ]);
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json([

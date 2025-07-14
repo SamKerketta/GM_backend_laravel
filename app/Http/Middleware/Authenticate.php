@@ -19,9 +19,11 @@ class Authenticate extends Middleware
     {
         abort(response()->json(
             [
-                'status' => true,
-                'authenticated' => false
-            ]
+                'status' => false,
+                'message' => "Unauthenticated",
+                'data' => []
+            ],
+            401
         ));
     }
 }
