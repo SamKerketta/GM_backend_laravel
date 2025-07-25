@@ -52,7 +52,7 @@ class PaymentConfirmationMail extends Mailable
      */
     public function attachments(): array
     {
-        $invoiceId = $this->_data['lastTranId'];
+        $invoiceId = $this->_data['tranId'];
         $invoiceUrl = url("invoice/{$invoiceId}");
 
         // Fetch the PDF content
