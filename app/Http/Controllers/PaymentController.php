@@ -64,12 +64,15 @@ class PaymentController extends Controller
                 // $this->sendWhatsAppPaymentSuccessNotification($paymentNotificationReqs);
             }
 
+            $fromMonth = $paymentDetail['monthFrom'] ? Carbon::parse($paymentDetail['monthFrom'])->format('M-Y') : Carbon::now()->format('M-Y');
+            $toMonth = $paymentDetail['monthTill'] ? Carbon::parse($paymentDetail['monthTill'])->format('M-Y') : Carbon::now()->format('M-Y');
+
             Mail::to($member->email)->queue(new PaymentConfirmationMail([
                 'name' => $member->name,
                 'tranId' => $paymentDetail['lastTranId'],
                 "amountPaid"  => $paymentDetail['amountPaid'],
                 "paymentDate" => $todayDate,
-                "month" => $paymentDetail['monthFrom'] . " to " . $paymentDetail['monthTill']
+                "month" => $fromMonth . " to " . $toMonth
             ]));
 
 
