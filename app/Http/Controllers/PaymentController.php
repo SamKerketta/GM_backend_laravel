@@ -286,6 +286,8 @@ class PaymentController extends Controller
                 "payment_for"     => $request->paymentFor,
                 "payment_method"  => $request->paymentMethod,
                 "invoice_no"      => $invoiceNo,
+                "month_from"      => Carbon::parse($member->membership_start)->format('Y-m-d'),
+                "month_till"      => Carbon::parse($member->membership_end)->format('Y-m-d'),
             ];
 
             DB::beginTransaction();
