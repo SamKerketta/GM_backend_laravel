@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\IdGenerator;
+use App\Mail\PaymentConfirmationMail;
 use App\Mail\PaymentRemainderMail;
 use App\Models\Member;
 use App\Models\PlanMaster;
@@ -60,8 +61,17 @@ class PaymentController extends Controller
                     "monthTill"   => $paymentDetail['monthTill'],
                     "lastTranId"  => $paymentDetail['lastTranId'],
                 ]);
-                $this->sendWhatsAppPaymentSuccessNotification($paymentNotificationReqs);
+                // $this->sendWhatsAppPaymentSuccessNotification($paymentNotificationReqs);
             }
+
+            Mail::to($member->email)->queue(new PaymentConfirmationMail([
+                'name' => $member->name,
+                'tranId' => $paymentDetail['lastTranId'],
+                "amountPaid"  => $paymentDetail['amountPaid'],
+                "paymentDate" => $todayDate,
+                "month" => $paymentDetail['monthFrom'] . "to" . $paymentDetail['monthTill']
+            ]));
+
 
             return responseMsg(true, "Payment successful. Your Invoice no is " . $invoiceNo, $invoiceNo);
         } catch (Exception $e) {
