@@ -52,8 +52,26 @@ class PaymentConfirmationMail extends Mailable
      */
     public function attachments(): array
     {
-        return [
-            Attachment::fromPath(public_path('assets/Gravity_Logo.png')),
-        ];
+        $invoiceId = $this->_data['lastTranId'];
+        $invoiceUrl = url("invoice/{$invoiceId}");
+
+        // Fetch the PDF content
+        $response = Http::get($invoiceUrl);
+
+        // Check if the response is successful and is a PDF
+        if ($response->successful() && $response->header('content-type') === 'application/pdf') {
+            return [
+                Attachment::fromPath(public_path('assets/Gravity_Logo.png')),
+                Attachment::fromData(
+                    fn() => $response->body(),
+                    "invoice_{$invoiceId}.pdf"
+                )->withMime('application/pdf'),
+            ];
+        } else {
+            // Fallback: only attach the logo, or handle error as needed
+            return [
+                Attachment::fromPath(public_path('assets/Gravity_Logo.png')),
+            ];
+        }
     }
 }
