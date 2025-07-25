@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\IdGenerator;
+use App\Mail\PaymentRemainderMail;
 use App\Models\Member;
 use App\Models\PlanMaster;
 use App\Models\Transaction;
@@ -13,6 +14,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 use PDF;
@@ -112,8 +114,15 @@ class PaymentController extends Controller
             if (!$dueDetail)
                 throw new Exception("No dues found for the member.");
 
+            # Email Notification
+            Mail::to($refMember->email)->queue(new PaymentRemainderMail([
+                'name' => $refMember->name,
+                'totalDue' => $dueDetail->total_due,
+                'forMonth' => $forMonth
+            ]));
+
             #_Whatsaap Message
-            if (strlen($refMember->phone) == 10) {
+            if (!empty(config('constants.WHATSAPP_TOKEN')) && strlen($refMember->phone) == 10) {
                 $whatsapp = (Whatsapp_Send(
                     $refMember->phone,
                     'payment_reminder',
