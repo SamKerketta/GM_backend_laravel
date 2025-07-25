@@ -69,7 +69,7 @@ class PaymentController extends Controller
                 'tranId' => $paymentDetail['lastTranId'],
                 "amountPaid"  => $paymentDetail['amountPaid'],
                 "paymentDate" => $todayDate,
-                "month" => $paymentDetail['monthFrom'] . "to" . $paymentDetail['monthTill']
+                "month" => $paymentDetail['monthFrom'] . " to " . $paymentDetail['monthTill']
             ]));
 
 

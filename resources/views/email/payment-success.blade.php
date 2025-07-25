@@ -17,7 +17,7 @@
                             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                             <h3 style="color: #333;">Hey {{ $name }},</h3>
                             <p style="font-size: 16px; color: #555;">
-                                Thanks for your payment of <strong style="color: #e67e22;">₹ {{ $amountPaid }} for {{ $month }} on {{ $paymentDate }} 🎉</strong>.
+                                Thanks for your payment of <strong style="color: #e67e22;">₹ {{ $amountPaid }} </strong> <strong> for {{ $month }} on {{ $paymentDate }} 🎉</strong>.
                                 <br><br>
                                 We’re glad to have you as part of the<strong> Gravity Fitness family.</strong>.
                                 <br><br>
