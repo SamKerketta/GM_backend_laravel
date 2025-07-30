@@ -80,11 +80,21 @@ class Member extends Model
             '*',
             DB::raw("CONCAT('(storage/', photo) AS photo_url"),
             DB::raw("IF(membership_end < '$today' OR due_balance > 0, 1, 0) as due_status"),
-            DB::raw("IF(membership_end < '$today', CEIL(DATEDIFF('$today', membership_end) / 30), 0) as months_due")
+            DB::raw("
+            CASE  
+                    when 
+                        shift_id = 1 then 'Morning'
+                    when 
+                        shift_id = 2 then 'Evening'
+                    ELSE 
+                    'Others'
+            END AS shift_name
+   ")
 
         )
             ->where('status', 1)
-            ->orderByDesc('due_status');
+            ->orderByDesc('due_status')
+            ->orderBy('name');
 
         if (!empty($name)) {
             $query->where('name', 'like', '%' . $name . '%')

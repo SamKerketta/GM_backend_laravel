@@ -80,17 +80,17 @@ class MemberController extends Controller
                 ->paginate($perPage);
 
             // Step 1: Optional - Add shift_name and null cleanup
-            $shiftTypes = config('constants.SHIFT_TYPES');
-            $transformed = $memberList->map(function ($item) use ($shiftTypes) {
-                return collect($item)->map(function ($value) {
-                    return is_null($value) ? '' : $value;
-                })->merge([
-                    'shift_name' => $shiftTypes[$item['shift_id']] ?? 'Unknown',
-                ])->all();
-            });
+            // $shiftTypes = config('constants.SHIFT_TYPES');
+            // $transformed = $memberList->map(function ($item) use ($shiftTypes) {
+            //     return collect($item)->map(function ($value) {
+            //         return is_null($value) ? '' : $value;
+            //     })->merge([
+            //         'shift_name' => $shiftTypes[$item['shift_id']] ?? 'Unknown',
+            //     ])->all();
+            // });
 
-            // Step 2: Replace the collection in the paginator
-            $memberList->setCollection($transformed);
+            // // Step 2: Replace the collection in the paginator
+            // $memberList->setCollection($transformed);
 
             return responseMsg(true, "List of Members", $memberList);
         } catch (Exception $e) {
