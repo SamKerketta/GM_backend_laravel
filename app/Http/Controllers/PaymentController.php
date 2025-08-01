@@ -67,13 +67,15 @@ class PaymentController extends Controller
             $fromMonth = $paymentDetail['monthFrom'] ? Carbon::parse($paymentDetail['monthFrom'])->format('M-Y') : Carbon::now()->format('M-Y');
             $toMonth = $paymentDetail['monthTill'] ? Carbon::parse($paymentDetail['monthTill'])->format('M-Y') : Carbon::now()->format('M-Y');
 
-            Mail::to($member->email)->queue(new PaymentConfirmationMail([
-                'name' => $member->name,
-                'tranId' => $paymentDetail['lastTranId'],
-                "amountPaid"  => $paymentDetail['amountPaid'],
-                "paymentDate" => $todayDate,
-                "month" => $fromMonth . " to " . $toMonth
-            ]));
+            if (isset($member->email) && !empty(trim($member->email))) {
+                Mail::to($member->email)->queue(new PaymentConfirmationMail([
+                    'name' => $member->name,
+                    'tranId' => $paymentDetail['lastTranId'],
+                    "amountPaid"  => $paymentDetail['amountPaid'],
+                    "paymentDate" => $todayDate,
+                    "month" => $fromMonth . " to " . $toMonth
+                ]));
+            }
 
 
             return responseMsg(true, "Payment successful. Your Invoice no is " . $invoiceNo, $invoiceNo);
@@ -128,11 +130,13 @@ class PaymentController extends Controller
                 throw new Exception("No dues found for the member.");
 
             # Email Notification
-            Mail::to($refMember->email)->queue(new PaymentRemainderMail([
-                'name' => $refMember->name,
-                'totalDue' => $dueDetail->total_due,
-                'forMonth' => $forMonth
-            ]));
+            if (isset($refMember->email) && !empty(trim($refMember->email))) {
+                Mail::to($refMember->email)->queue(new PaymentRemainderMail([
+                    'name' => $refMember->name,
+                    'totalDue' => $dueDetail->total_due,
+                    'forMonth' => $forMonth
+                ]));
+            }
 
             #_Whatsaap Message
             if (!empty(config('constants.WHATSAPP_TOKEN')) && strlen($refMember->phone) == 10) {
